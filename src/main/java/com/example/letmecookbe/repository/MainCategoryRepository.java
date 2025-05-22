@@ -1,6 +1,5 @@
 package com.example.letmecookbe.repository;
 
-import com.example.letmecookbe.dto.request.MainCategoryRequest;
 import com.example.letmecookbe.entity.MainCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

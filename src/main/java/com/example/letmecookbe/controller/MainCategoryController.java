@@ -1,6 +1,6 @@
 package com.example.letmecookbe.controller;
 
-import com.example.letmecookbe.dto.request.MainCategoryRequest;
+import com.example.letmecookbe.dto.request.MainCategoryCreationRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.MainCategoryResponse;
 import com.example.letmecookbe.entity.MainCategory;
@@ -20,7 +20,7 @@ import java.util.List;
 public class MainCategoryController {
     MainCategoryService service;
     @PostMapping("/create")
-    ApiResponse<MainCategoryResponse> createMainCategory(@RequestBody @Valid MainCategoryRequest request){
+    ApiResponse<MainCategoryResponse> createMainCategory(@RequestBody @Valid MainCategoryCreationRequest request){
         ApiResponse<MainCategoryResponse> response = new ApiResponse<>();
         response.setMessage("Create Main Category: "+ request.getCategoryName());
         response.setResult(service.createMainCategory(request));
@@ -28,7 +28,7 @@ public class MainCategoryController {
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<MainCategoryResponse> updateCategoryName(@PathVariable String id, @RequestBody @Valid MainCategoryRequest request){
+    ApiResponse<MainCategoryResponse> updateCategoryName(@PathVariable String id, @RequestBody @Valid MainCategoryCreationRequest request){
         ApiResponse<MainCategoryResponse> response = new ApiResponse<>();
         response.setMessage("Update Main Category: "+ request.getCategoryName());
         response.setResult(service.updateCategoryName(id, request));

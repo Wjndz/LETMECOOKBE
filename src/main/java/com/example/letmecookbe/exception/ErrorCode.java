@@ -29,8 +29,9 @@ public enum ErrorCode {
     _CATEGORY_EXISTED(1017, "SUBThis main category already exists", HttpStatus.CONFLICT),
     SUBCATEGORY_BLANK(1018, "Sub-category must not be blank", HttpStatus.BAD_REQUEST),
     LIST_EMPTY(1019, "List is empty", HttpStatus.NO_CONTENT),
+    SUB_CATEGORY_EXISTED(1001, "This Sub-category already exists", HttpStatus.BAD_REQUEST),
     MAIN_CATEGORY_NOT_EXIST(1020, "This main does not exist", HttpStatus.NOT_FOUND),
-    SUB_CATEGORY_NOT_EXIST(1020, "This suv does not exist", HttpStatus.NOT_FOUND),
+    SUB_CATEGORY_NOT_EXIST(1020, "This sub does not exist", HttpStatus.NOT_FOUND),
     NOTIFICATION_LENGTH(1021, "Title and content must be at least 5 characters", HttpStatus.BAD_REQUEST),
     NOTIFICATION_EXISTED(1022, "Notification already exists", HttpStatus.CONFLICT),
     NOTIFICATION_NOT_EXISTED(1023, "Notification not exists", HttpStatus.NOT_FOUND),
@@ -52,6 +53,10 @@ public enum ErrorCode {
     DRIVE_UPLOAD_FAILED(1039, "Drive upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
     FEEDBACK_TYPE_INCORRECT(1040,"Incorrect feedback type", HttpStatus.BAD_REQUEST),
     NOTIFICATION_INVALID(1041,"Notification invalid", HttpStatus.BAD_REQUEST),
+    INGREDIENT_NOT_FOUND(1042,"Ingredient not found", HttpStatus.NOT_FOUND),
+    INGREDIENT_EXISTED(1043,"Ingredient already exists", HttpStatus.CONFLICT),
+    INGREDIENT_NOT_EXISTED(1044,"Ingredient not found", HttpStatus.NOT_FOUND),
+
 
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),

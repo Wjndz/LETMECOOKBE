@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MainCategoryRequest {
+public class MainCategoryCreationRequest {
     @NotBlank(message = "NOT_NULL")
     @Size(min = 2, message ="CATEGORYNAME_INVALID")
     String categoryName;

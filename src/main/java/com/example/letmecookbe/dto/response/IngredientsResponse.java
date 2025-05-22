@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MainCategoryResponse {
-    String categoryName;
+public class IngredientsResponse {
+    String ingredientName;
+    String caloriesPerUnit;
 }

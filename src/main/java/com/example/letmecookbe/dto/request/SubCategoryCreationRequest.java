@@ -1,7 +1,5 @@
 package com.example.letmecookbe.dto.request;
 
-import com.example.letmecookbe.entity.MainCategory;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.NotBlank;
@@ -11,7 +9,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SubCategoryRequest {
+public class SubCategoryCreationRequest {
     @NotBlank(message = "NOT_NULL")
     String subCategoryName;
     String subCategoryImg;

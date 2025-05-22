@@ -1,6 +1,6 @@
 package com.example.letmecookbe.service;
 
-import com.example.letmecookbe.dto.request.MainCategoryRequest;
+import com.example.letmecookbe.dto.request.MainCategoryCreationRequest;
 import com.example.letmecookbe.dto.response.MainCategoryResponse;
 import com.example.letmecookbe.entity.MainCategory;
 import com.example.letmecookbe.exception.AppException;
@@ -23,7 +23,7 @@ public class MainCategoryService {
     @Qualifier("mainCategoryMapperImpl")
     MainCategoryMapper mapper;
 
-    public MainCategoryResponse createMainCategory(MainCategoryRequest mainCategory) {
+    public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
@@ -32,7 +32,7 @@ public class MainCategoryService {
         return mapper.toMainCategoryResponse(savedMain);
     }
 
-    public MainCategoryResponse updateCategoryName(String id, MainCategoryRequest mainCategory) {
+    public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
         MainCategory main = repository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
         main.setCategoryName(mainCategory.getCategoryName());
