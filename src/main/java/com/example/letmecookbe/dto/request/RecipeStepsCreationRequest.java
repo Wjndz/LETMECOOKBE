@@ -13,7 +13,7 @@ import org.apache.logging.log4j.message.Message;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeStepsCreationRequest {
     @NotBlank(message = "NOT_NULL")
-    String step;
+    int step;
 
     @NotBlank(message = "NOT_NULL")
     String recipeId;

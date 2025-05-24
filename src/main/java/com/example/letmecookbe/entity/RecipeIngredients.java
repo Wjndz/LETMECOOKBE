@@ -25,7 +25,7 @@ public class RecipeIngredients {
     @JoinColumn(name = "ingredient_id", referencedColumnName = "id")
     Ingredients ingredient;
 
-    String quantity;
+    int quantity;
 }
 
 @Embeddable

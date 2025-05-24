@@ -11,17 +11,26 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RecipeSteps {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    String step;
+    @EmbeddedId
+    RecipeStepsId id;
+
+//    int step;
 
     @ManyToOne
+    @MapsId("recipeId")
     @JoinColumn(name = "recipe_id", referencedColumnName = "id")
     Recipe recipe;
 
     String description;
     String waitingTime;
     String recipeStepsImg;
+}
 
+@Embeddable
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class RecipeStepsId implements java.io.Serializable {
+    String recipeId;
+    int step;
 }

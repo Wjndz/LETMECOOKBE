@@ -20,7 +20,7 @@ public class Recipe {
     String img;
     String cookingTime;
     String difficulty;
-    String totalLikes;
+    int totalLikes;
 
     @ManyToOne
     @JoinColumn(name = "subCateogry_id", referencedColumnName = "id")
