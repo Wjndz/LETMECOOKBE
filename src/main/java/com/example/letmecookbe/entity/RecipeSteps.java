@@ -14,7 +14,7 @@ public class RecipeSteps {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    String step;
+    int step;
 
     @ManyToOne
     @JoinColumn(name = "recipe_id", referencedColumnName = "id")
@@ -23,5 +23,5 @@ public class RecipeSteps {
     String description;
     String waitingTime;
     String recipeStepsImg;
-
 }
+
