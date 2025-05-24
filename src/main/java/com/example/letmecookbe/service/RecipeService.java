@@ -71,4 +71,15 @@ public class RecipeService {
         return RecipeRepository.findRecipeByKeyword(keyword);
     }
 
+    public String deleteRecipe(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        RecipeRepository.delete(recipe);
+        if(RecipeRepository.existsById(id)){
+            return "delete recipe failed: "+ id;
+        }
+        return "delete recipe success: "+ id;
+    }
+
 }
