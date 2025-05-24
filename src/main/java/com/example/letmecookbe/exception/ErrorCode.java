@@ -56,7 +56,7 @@ public enum ErrorCode {
     INGREDIENT_NOT_FOUND(1042,"Ingredient not found", HttpStatus.NOT_FOUND),
     INGREDIENT_EXISTED(1043,"Ingredient already exists", HttpStatus.CONFLICT),
     INGREDIENT_NOT_EXISTED(1044,"Ingredient not found", HttpStatus.NOT_FOUND),
-
+    RECIPE_NOT_FOUND(1045,"Recipe not found", HttpStatus.NOT_FOUND),
 
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),

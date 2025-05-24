@@ -19,11 +19,15 @@ public class RecipeCreationRequest {
     @Size(min = 2, message ="RECIPE_DESCRIPTION_INVALID")
     String description;
 
+    String RecipeImage;
+
     @NotBlank(message = "NOT_NULL")
     String difficulty;
 
     @NotBlank(message = "NOT_NULL")
     String cookingTime;
+
+    String status;
 
     @NotBlank(message = "NOT_NULL")
     String subCategoryId;

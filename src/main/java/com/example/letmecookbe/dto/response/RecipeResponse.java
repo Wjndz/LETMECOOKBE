@@ -14,6 +14,7 @@ public class RecipeResponse {
     String title;
     String description;
     String cookingTime;
+    String totalLikes;
     String difficulty;
     String subCategoryId;
     String AccountId;
