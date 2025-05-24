@@ -1,0 +1,20 @@
+package com.example.letmecookbe.dto.response;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class RecipeResponse {
+    String title;
+    String description;
+    String cookingTime;
+    String difficulty;
+    String subCategoryId;
+    String AccountId;
+}
