@@ -34,12 +34,12 @@ public class RecipeStepsService {
     }
 
     public RecipeStepsResponse updateRecipeSteps(String RecipeId, RecipeStepsUpdateRequest request){
+        if(!recipeRepository.existsById(RecipeId)){
+            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
+        }
         RecipeSteps recipeSteps = recipeStepsRepository.findByRecipeIdAndSteps(RecipeId,request.getStep());
         if(recipeSteps == null){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);
-        }
-        if(!recipeRepository.existsById(RecipeId)){
-            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
         if(request.getStep() !=0){
             recipeSteps.setStep(recipeSteps.getStep());
