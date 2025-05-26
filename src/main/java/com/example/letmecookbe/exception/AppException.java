@@ -2,18 +2,18 @@ package com.example.letmecookbe.exception;
 
 public class AppException extends RuntimeException {
 
-    private ErrorCode code;
-
-    public AppException(ErrorCode code) {
-        super(code.getMessage());
-        this.code = code;
+    public AppException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 
-    public ErrorCode getCode() {
-        return code;
+    private ErrorCode errorCode;
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 
-    public void setCode(ErrorCode code) {
-        this.code = code;
+    public void setErrorCode(ErrorCode errorCode) {
+        this.errorCode = errorCode;
     }
 }
