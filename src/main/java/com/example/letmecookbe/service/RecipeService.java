@@ -60,7 +60,7 @@ public class RecipeService {
 //
 //    }
 
-    public List<Recipe> findRecipeBySubCategoryId(String id){
+    public List<Recipe> getRecipeBySubCategoryId(String id){
         if(!subCategoryRepository.existsById(id)){
             throw new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST);
         }

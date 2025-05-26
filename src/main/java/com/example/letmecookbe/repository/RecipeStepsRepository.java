@@ -4,8 +4,11 @@ import com.example.letmecookbe.entity.RecipeSteps;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface RecipeStepsRepository extends JpaRepository<RecipeSteps, String> {
-    RecipeSteps findByRecipeId(String recipeId);
+    List<RecipeSteps> findRecipeStepsByRecipeId(String recipeId);
     RecipeSteps findByRecipeIdAndSteps(String recipeId, int step);
+
 }
