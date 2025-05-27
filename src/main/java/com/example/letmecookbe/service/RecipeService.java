@@ -9,7 +9,6 @@ import com.example.letmecookbe.entity.SubCategory;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.RecipeMapper;
-import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
 import com.example.letmecookbe.repository.SubCategoryRepository;
 import lombok.AccessLevel;
