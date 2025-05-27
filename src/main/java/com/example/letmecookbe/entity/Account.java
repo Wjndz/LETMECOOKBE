@@ -42,6 +42,4 @@ public class Account {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
-
-
 }
