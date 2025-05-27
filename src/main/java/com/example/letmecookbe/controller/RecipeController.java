@@ -7,7 +7,9 @@ import com.example.letmecookbe.dto.response.RecipeResponse;
 import com.example.letmecookbe.entity.Recipe;
 import com.example.letmecookbe.service.RecipeService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/recipe")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RecipeController {
     RecipeService recipeService;
 
@@ -27,7 +30,7 @@ public class RecipeController {
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<RecipeResponse> updateReicpe(@PathVariable String id, @RequestBody @Valid RecipeUpdateRequest request){
+    ApiResponse<RecipeResponse> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeUpdateRequest request){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe: "+ request.getTitle());
         response.setResult(recipeService.updateRecipe(id, request));

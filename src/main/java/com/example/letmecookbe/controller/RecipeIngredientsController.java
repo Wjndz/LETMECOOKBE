@@ -9,7 +9,9 @@ import com.example.letmecookbe.dto.response.RecipeIngredientsResponse;
 import com.example.letmecookbe.entity.RecipeIngredients;
 import com.example.letmecookbe.service.RecipeIngredientsService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/recipeIngredients")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RecipeIngredientsController {
     RecipeIngredientsService recipeIngredientsService;
 

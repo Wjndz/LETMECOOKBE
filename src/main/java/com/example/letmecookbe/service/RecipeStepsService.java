@@ -37,7 +37,8 @@ public class RecipeStepsService {
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
-        RecipeSteps recipeSteps = recipeStepsRepository.findByRecipeIdAndSteps(RecipeId,request.getStep());
+
+        RecipeSteps recipeSteps = recipeStepsRepository.findRecipeStepsByRecipeIdAndStep(RecipeId,String.valueOf(request.getStep()));
         if(recipeSteps == null){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);
         }

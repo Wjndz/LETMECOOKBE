@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface RecipeStepsRepository extends JpaRepository<RecipeSteps, String> {
     List<RecipeSteps> findRecipeStepsByRecipeId(String recipeId);
-    RecipeSteps findByRecipeIdAndSteps(String recipeId, int step);
+    RecipeSteps findRecipeStepsByRecipeIdAndStep(String recipeId, String step);
 
 }

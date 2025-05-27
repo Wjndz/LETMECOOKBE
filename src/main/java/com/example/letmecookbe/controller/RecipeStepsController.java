@@ -7,7 +7,9 @@ import com.example.letmecookbe.dto.response.RecipeStepsResponse;
 import com.example.letmecookbe.entity.RecipeSteps;
 import com.example.letmecookbe.service.RecipeStepsService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/recipeSteps")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RecipeStepsController {
     RecipeStepsService recipeStepsService;
 

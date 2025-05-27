@@ -23,7 +23,7 @@ public class Recipe {
     int totalLikes;
 
     @ManyToOne
-    @JoinColumn(name = "subCateogry_id", referencedColumnName = "id")
+    @JoinColumn(name = "sub_Category_id", referencedColumnName = "id")
     SubCategory subCategory;
 
     @ManyToOne
