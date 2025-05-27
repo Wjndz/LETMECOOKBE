@@ -1,14 +1,33 @@
 server:
   port: 8080
-#  servlet:
-#    context-path: /identity
+
+jwt:
+  signerKey: "qUZg3QK6XUc8M6ydXOoEGekDIOEDNhlFqlFm7GdiqXus9EgqwzvBPEOI+fATDHZI"
+  valid-duration: 10  # Thời gian hết hạn token (giây)
+  refresh-duration: 120  # Thời gian hết hạn refresh token (giây)
 
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: 2025letmecook@gmail.com
+    password: xgpryoziwthfiude
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
   datasource:
     url: "jdbc:mysql://localhost:3306/appnauan"
     username: root
     password: vuhoangquan2004
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,3 +35,22 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # Cấu hình upload file
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB     # Tăng giới hạn file tối đa lên 50MB
+      max-request-size: 50MB  # Tăng giới hạn request tối đa lên 50MB
+      file-size-threshold: 1MB  # File lớn hơn 1MB sẽ được ghi tạm vào đĩa
+
+# Cấu hình thư mục lưu trữ file và base URL
+app:
+  upload-dir: uploads/  # Thư mục lưu file (có thể thay đổi đường dẫn)
+  base-url: http://localhost:8080/upload/  # URL để truy cập file
+
+logging:
+  level:
+    com.example.letmecookbe.service.EmailVerification: DEBUG
+    com.example.letmecookbe.service.AccountService: DEBUG
+    com.example.letmecookbe.service.FileStorageService: DEBUG  # Thêm log cho FileStorageService
