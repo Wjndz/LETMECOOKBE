@@ -50,6 +50,7 @@ public class ApplicationInitConfig {
 
                 Account account  = Account.builder()
                         .email(ADMIN_EMAIL)
+                        .username("admin")
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
                         .roles(roles)
                         .build();

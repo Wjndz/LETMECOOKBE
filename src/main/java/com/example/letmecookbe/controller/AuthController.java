@@ -51,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    ApiResponse<AuthResponse> authenticate(@RequestBody RefreshRequest request)
+    ApiResponse<AuthResponse> refresh(@RequestBody RefreshRequest request)
             throws ParseException, JOSEException {
         var result = authService.refreshToken(request);
         return ApiResponse.<AuthResponse>builder()
