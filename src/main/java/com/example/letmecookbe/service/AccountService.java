@@ -166,7 +166,7 @@ public class AccountService {
         log.debug("Password reset successful for email [{}]", trimmedEmail);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     public List<AccountResponse> getAllAcounts() {
         return accountRepository.findAll()
                 .stream()
@@ -181,6 +181,7 @@ public class AccountService {
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteAccount(String id) {
         accountRepository.deleteById(id);
     }

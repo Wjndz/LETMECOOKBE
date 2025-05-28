@@ -25,7 +25,9 @@ public class SecurityConfig {
             "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh"
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh",
+            "/main-category/getAll",
+            "/upl"
     };
 
    @Autowired
@@ -35,6 +37,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers("/upload/**").permitAll()
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->

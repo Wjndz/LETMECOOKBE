@@ -48,7 +48,7 @@ public class UserInfoService {
         String accountId = getAccountIdFromContext();
 
         if (!userInfo.getAccount().getId().equals(accountId)) {
-            throw new SecurityException("Không có quyền chỉnh sửa thông tin này");
+            throw new AppException(ErrorCode.USER_INFO_NOT_FOUND);
         }
 
         userInfoMapper.updateUserInfo(request, userInfo);
@@ -94,7 +94,6 @@ public class UserInfoService {
         return userInfoMapper.toUserInfoResponse(userInfo); // Nếu không có avatar, trả về thông tin hiện tại
     }
 
-    @PreAuthorize("hasRole('USER')")
     private String getAccountIdFromContext() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
