@@ -15,7 +15,6 @@ import com.example.letmecookbe.repository.SubCategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +27,6 @@ public class RecipeService {
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
-
 
     public RecipeResponse createRecipe(RecipeCreationRequest request){
         SubCategory subCategory = subCategoryRepository.findById(request.getSubCategoryId()).orElseThrow(
@@ -43,7 +41,6 @@ public class RecipeService {
         Recipe savedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
-
 
     public RecipeResponse updateRecipe(String id, RecipeUpdateRequest updateRequest){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
@@ -65,7 +62,8 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    
+
     public List<Recipe> getAllRecipe(){
         if(RecipeRepository.findAll().isEmpty())
             throw new AppException(ErrorCode.LIST_EMPTY);

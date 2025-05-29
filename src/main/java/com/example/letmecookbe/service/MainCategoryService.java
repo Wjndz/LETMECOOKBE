@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public class MainCategoryService {
     @Qualifier("mainCategoryMapperImpl")
     MainCategoryMapper mapper;
 
-    @PreAuthorize("hasRole('ADMIN')")
     public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
@@ -34,7 +32,6 @@ public class MainCategoryService {
         return mapper.toMainCategoryResponse(savedMain);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
         MainCategory main = repository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));

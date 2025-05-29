@@ -22,22 +22,23 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/accounts/send-code",
+            "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh",
-            "/main-category/getAll",
-            "/upl"
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh"
+
     };
 
-   @Autowired
-   CustomJwtDecoder  customJwtDecoder;
+    @Autowired
+    CustomJwtDecoder  customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers("/upload/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/recipes/{recipeId}/comments").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/recipes/{recipeId}/comments/{commentId}").hasRole("ADMIN")// <-- THÊM DÒNG NÀY VÀO ĐÂY
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
@@ -57,10 +58,10 @@ public class SecurityConfig {
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter(){
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(""); // Phải có tiền tố này
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("scope"); // Phải là "scope"
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-
         return jwtAuthenticationConverter;
     }
 

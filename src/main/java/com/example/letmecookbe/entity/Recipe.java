@@ -3,7 +3,6 @@ package com.example.letmecookbe.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.apache.catalina.User;
 
 @Entity
 @Data
@@ -23,7 +22,7 @@ public class Recipe {
     int totalLikes;
 
     @ManyToOne
-    @JoinColumn(name = "subCategory_id", referencedColumnName = "id")
+    @JoinColumn(name = "sub_Category_id", referencedColumnName = "id")
     SubCategory subCategory;
 
     @ManyToOne
