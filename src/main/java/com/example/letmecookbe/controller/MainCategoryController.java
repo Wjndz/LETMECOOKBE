@@ -36,7 +36,7 @@ public class MainCategoryController {
     }
 
     @GetMapping("/getAll")
-    ApiResponse<List<MainCategory>> getAll(){
+    public ApiResponse<List<MainCategory>> getAll(){
         ApiResponse<List<MainCategory>> response = new ApiResponse<>();
         response.setMessage("Get all Main Categories: ");
         response.setResult(service.getAllMainCategory());

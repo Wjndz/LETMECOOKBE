@@ -32,6 +32,7 @@ public class FileStorageService {
      * @return The URL of the uploaded file
      * @throws AppException if upload fails or file is invalid
      */
+
     public String uploadFile(MultipartFile file) {
         validateFile(file);
 

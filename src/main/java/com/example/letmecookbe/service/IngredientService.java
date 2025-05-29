@@ -2,7 +2,6 @@ package com.example.letmecookbe.service;
 
 import com.example.letmecookbe.dto.request.IngredientsCreationRequest;
 import com.example.letmecookbe.dto.request.IngredientsUpdateRequest;
-import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.IngredientsResponse;
 import com.example.letmecookbe.entity.Ingredients;
 import com.example.letmecookbe.exception.AppException;
