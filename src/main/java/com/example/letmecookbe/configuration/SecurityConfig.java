@@ -22,7 +22,6 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/accounts/send-code",
-            "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
             "/auth/token","/auth/introspect","auth/logout","auth/refresh",
