@@ -64,7 +64,7 @@ public class AccountService {
             account.setStatus(AccountStatus.ACTIVE);
         }
         HashSet<Role> roles = new HashSet<>();
-        roleRepository.findById(PreDefinedRole.USER_ROLE).ifPresent(roles::add);;
+        roleRepository.findById(PreDefinedRole.USER_ROLE).ifPresent(roles::add);
 
         account.setRoles(roles);
 

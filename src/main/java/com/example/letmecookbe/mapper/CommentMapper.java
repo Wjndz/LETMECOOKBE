@@ -1,4 +1,5 @@
 package com.example.letmecookbe.mapper;
+import com.example.letmecookbe.dto.request.CommentRequest;
 import com.example.letmecookbe.dto.response.CommentResponse;
 import com.example.letmecookbe.entity.Comment;
 import org.mapstruct.Mapper;
@@ -12,6 +13,8 @@ public interface CommentMapper {
     @Mapping(source = "recipe.id", target = "recipeId")
     @Mapping(source = "recipe.title", target = "recipeTitle")
     CommentResponse toCommentResponse(Comment comment);
+
+    Comment toComment(CommentRequest request);
 
     // Chuyển List<Comment> Entities -> List<CommentResponse> DTOs
     List<CommentResponse> toCommentResponseList(List<Comment> comments);
