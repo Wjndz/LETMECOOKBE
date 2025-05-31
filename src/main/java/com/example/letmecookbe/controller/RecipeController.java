@@ -22,7 +22,7 @@ public class RecipeController {
     RecipeService recipeService;
 
     @PostMapping("/create")
-    ApiResponse<RecipeResponse> createRecipe(@RequestBody @Valid RecipeCreationRequest request){
+    public ApiResponse<RecipeResponse> createRecipe(@RequestBody @Valid RecipeCreationRequest request){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe: "+ request.getTitle());
         response.setResult(recipeService.createRecipe(request));
@@ -30,7 +30,7 @@ public class RecipeController {
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<RecipeResponse> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeUpdateRequest request){
+    public ApiResponse<RecipeResponse> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeUpdateRequest request){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe: "+ request.getTitle());
         response.setResult(recipeService.updateRecipe(id, request));
@@ -38,7 +38,7 @@ public class RecipeController {
     }
 
     @GetMapping("/getAll")
-    ApiResponse<List<Recipe>> getAllRecipe(){
+    public ApiResponse<List<Recipe>> getAllRecipe(){
         ApiResponse<List<Recipe>> response = new ApiResponse<>();
         response.setMessage("Get all Recipe: ");
         response.setResult(recipeService.getAllRecipe());
@@ -46,7 +46,7 @@ public class RecipeController {
     }
 
     @GetMapping("/getBySubCategory/{id}")
-    ApiResponse<List<Recipe>> getRecipeBySubCategory(@PathVariable String id){
+    public ApiResponse<List<Recipe>> getRecipeBySubCategory(@PathVariable String id){
         ApiResponse<List<Recipe>> response = new ApiResponse<>();
         response.setMessage("Get all Recipe by Sub Category: "+ id);
         response.setResult(recipeService.getRecipeBySubCategoryId(id));
@@ -54,7 +54,7 @@ public class RecipeController {
     }
 
     @GetMapping("/findByKeyWord/{keyword}")
-    ApiResponse<List<Recipe>> findRecipeByKeyWord(@PathVariable String keyword){
+    public ApiResponse<List<Recipe>> findRecipeByKeyWord(@PathVariable String keyword){
         ApiResponse<List<Recipe>> response = new ApiResponse<>();
         response.setMessage("find all Recipe by keyword: "+ keyword);
         response.setResult(recipeService.findRecipeByKeyword(keyword));
@@ -62,7 +62,7 @@ public class RecipeController {
     }
 
     @DeleteMapping("/deleteRecipe/{id}")
-    ApiResponse<String> deleteRecipe(@PathVariable String id){
+    public ApiResponse<String> deleteRecipe(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(recipeService.deleteRecipe(id));
         return response;

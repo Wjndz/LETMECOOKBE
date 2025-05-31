@@ -22,7 +22,7 @@ public class RecipeStepsController {
     RecipeStepsService recipeStepsService;
 
     @PostMapping("/create")
-    ApiResponse<RecipeStepsResponse> createRecipeSteps(@RequestBody @Valid RecipeStepsCreationRequest request){
+    public ApiResponse<RecipeStepsResponse> createRecipeSteps(@RequestBody @Valid RecipeStepsCreationRequest request){
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe Steps");
         response.setResult(recipeStepsService.createRecipeSteps(request));
@@ -30,7 +30,7 @@ public class RecipeStepsController {
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<RecipeStepsResponse> updateRecipeSteps(@PathVariable String id,@RequestBody @Valid RecipeStepsUpdateRequest request){
+    public ApiResponse<RecipeStepsResponse> updateRecipeSteps(@PathVariable String id,@RequestBody @Valid RecipeStepsUpdateRequest request){
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe Steps");
         response.setResult(recipeStepsService.updateRecipeSteps(id,request));
@@ -38,7 +38,7 @@ public class RecipeStepsController {
     }
 
     @GetMapping("/getAllRecipeSteps/{id}")
-    ApiResponse<List<RecipeSteps>> getRecipeStepsByRecipeId(@PathVariable String id){
+    public ApiResponse<List<RecipeSteps>> getRecipeStepsByRecipeId(@PathVariable String id){
         ApiResponse<List<RecipeSteps>> response = new ApiResponse<>();
         response.setMessage("Get all recipe steps by recipe id: "+ id);
         response.setResult(recipeStepsService.getRecipeStepsByRecipeId(id));
@@ -46,7 +46,7 @@ public class RecipeStepsController {
     }
 
     @DeleteMapping("/delete/{id}")
-    ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
+    public ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(recipeStepsService.deleteRecipeSteps(id));
         return response;
