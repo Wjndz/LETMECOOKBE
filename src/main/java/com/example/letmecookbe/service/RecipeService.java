@@ -105,15 +105,21 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    public List<Recipe> getRecipeBySubCategoryId(String id){
+    public List<RecipeResponse> getRecipeBySubCategoryId(String id){
         if(!subCategoryRepository.existsById(id)){
             throw new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST);
         }
-        return RecipeRepository.findRecipeBySubCategoryId(id);
+        List<Recipe> recipes = RecipeRepository.findRecipeBySubCategoryId(id);
+        return  recipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<Recipe> findRecipeByKeyword(String keyword){
-        return RecipeRepository.findRecipeByKeyword(keyword);
+    public List<RecipeResponse> findRecipeByKeyword(String keyword){
+        List<Recipe> recipes = RecipeRepository.findRecipeByKeyword(keyword);
+        return  recipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
     }
 
     public String deleteRecipe(String id){

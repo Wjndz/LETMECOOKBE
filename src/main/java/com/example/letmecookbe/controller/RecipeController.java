@@ -46,16 +46,16 @@ public class RecipeController {
     }
 
     @GetMapping("/getBySubCategory/{id}")
-    public ApiResponse<List<Recipe>> getRecipeBySubCategory(@PathVariable String id){
-        ApiResponse<List<Recipe>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeResponse>> getRecipeBySubCategory(@PathVariable String id){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
         response.setMessage("Get all Recipe by Sub Category: "+ id);
         response.setResult(recipeService.getRecipeBySubCategoryId(id));
         return response;
     }
 
     @GetMapping("/findByKeyWord/{keyword}")
-    public ApiResponse<List<Recipe>> findRecipeByKeyWord(@PathVariable String keyword){
-        ApiResponse<List<Recipe>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeResponse>> findRecipeByKeyWord(@PathVariable String keyword){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
         response.setMessage("find all Recipe by keyword: "+ keyword);
         response.setResult(recipeService.findRecipeByKeyword(keyword));
         return response;
