@@ -40,8 +40,8 @@ public class RecipeIngredientsController {
     }
 
     @GetMapping("/getAllRecipeIngredients/{id}")
-    public ApiResponse<List<RecipeIngredients>> getRecipeIngredientsByRecipeId(@PathVariable String id){
-        ApiResponse<List<RecipeIngredients>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeIngredientsResponse>> getRecipeIngredientsByRecipeId(@PathVariable String id){
+        ApiResponse<List<RecipeIngredientsResponse>> response = new ApiResponse<>();
         response.setMessage("Get all recipe ingredients by recipe id: "+ id);
         response.setResult(recipeIngredientsService.getRecipeIngredientsByRecipeId(id));
         return response;

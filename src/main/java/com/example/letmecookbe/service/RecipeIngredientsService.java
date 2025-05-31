@@ -20,6 +20,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,11 +69,14 @@ public class RecipeIngredientsService {
         return recipeIngredientsMapper.toRecipeIngredientsResponse(savedRecipeIngredients);
     }
 
-    public List<RecipeIngredients> getRecipeIngredientsByRecipeId(String RecipeId){
+    public List<RecipeIngredientsResponse> getRecipeIngredientsByRecipeId(String RecipeId){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
-        return recipeIngredientsRepository.findAllByRecipeId(RecipeId);
+        List<RecipeIngredients> ingredients =recipeIngredientsRepository.findAllByRecipeId(RecipeId);
+        return ingredients.stream()
+                .map(recipeIngredientsMapper::toRecipeIngredientsResponse)
+                .collect(Collectors.toList());
     }
 
     public String deleteRecipeIngredients(String RecipeId,String IngredientId){
