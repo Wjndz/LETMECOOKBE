@@ -31,11 +31,11 @@ public class RecipeIngredientsController {
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    public ApiResponse<RecipeIngredientsResponse> updateRecipeIngredients(@PathVariable String id, @RequestBody @Valid RecipeIngredientsUpdateRequest request){
+    @PutMapping("/update/{recipeId}/{ingredientId}")
+    public ApiResponse<RecipeIngredientsResponse> updateRecipeIngredients(@PathVariable String recipeId,@PathVariable String ingredientId, @RequestBody @Valid RecipeIngredientsUpdateRequest request){
         ApiResponse<RecipeIngredientsResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe Ingredients");
-        response.setResult(recipeIngredientsService.updateRecipeIngredients(id, request));
+        response.setResult(recipeIngredientsService.updateRecipeIngredients(recipeId,ingredientId, request));
         return response;
     }
 
@@ -47,7 +47,7 @@ public class RecipeIngredientsController {
         return response;
     }
 
-    @DeleteMapping("/deleteRecipeIngredients/{recipeId}/{ingredientId}")
+    @DeleteMapping("/delete/{recipeId}/{ingredientId}")
     public ApiResponse<String> deleteRecipeIngredients(@PathVariable String recipeId, @PathVariable String ingredientId){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(recipeIngredientsService.deleteRecipeIngredients(recipeId, ingredientId));
