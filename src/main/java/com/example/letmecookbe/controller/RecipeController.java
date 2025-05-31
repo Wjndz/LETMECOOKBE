@@ -65,7 +65,15 @@ public class RecipeController {
     public ApiResponse<List<RecipeResponse>> getRecipeByAccount(){
         ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
         response.setMessage("Get all Recipe by Account: ");
-        response.setResult(recipeService.getAllRecipe());
+        response.setResult(recipeService.getRecipeByAccountId());
+        return response;
+    }
+
+    @PostMapping("/changeStatus/{id}")
+    public ApiResponse<RecipeResponse> changeStatus(@PathVariable String id){
+        ApiResponse<RecipeResponse> response = new ApiResponse<>();
+        response.setMessage("Change Status: "+ id);
+        response.setResult(recipeService.changeStatusToApprove(id));
         return response;
     }
 

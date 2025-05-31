@@ -110,7 +110,9 @@ public class RecipeService {
             throw new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST);
         }
         List<Recipe> recipes = RecipeRepository.findRecipeBySubCategoryId(id);
+
         return  recipes.stream()
+                .filter(recipe -> "APPROVED".equalsIgnoreCase(recipe.getStatus()))
                 .map(recipeMapper::toRecipeResponse)
                 .collect(Collectors.toList());
     }
@@ -138,6 +140,15 @@ public class RecipeService {
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
         recipe.setTotalLikes(recipe.getTotalLikes() + 1);
+        Recipe updatedRecipe = RecipeRepository.save(recipe);
+        return recipeMapper.toRecipeResponse(updatedRecipe);
+    }
+
+    public RecipeResponse changeStatusToApprove(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        recipe.setStatus(String.valueOf(RecipeStatus.APPROVED));
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
