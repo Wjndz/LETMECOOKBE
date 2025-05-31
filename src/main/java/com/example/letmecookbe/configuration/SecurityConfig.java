@@ -36,7 +36,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/recipes/{recipeId}/comments").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/recipes/{recipeId}/comments/{commentId}").hasRole("ADMIN")// <-- THÊM DÒNG NÀY VÀO ĐÂY
                         .anyRequest().authenticated());
