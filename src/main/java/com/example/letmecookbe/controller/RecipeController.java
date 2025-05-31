@@ -4,7 +4,6 @@ import com.example.letmecookbe.dto.request.RecipeCreationRequest;
 import com.example.letmecookbe.dto.request.RecipeUpdateRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.RecipeResponse;
-import com.example.letmecookbe.entity.Recipe;
 import com.example.letmecookbe.service.RecipeService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -74,6 +73,14 @@ public class RecipeController {
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Change Status: "+ id);
         response.setResult(recipeService.changeStatusToApprove(id));
+        return response;
+    }
+
+    @PostMapping("/like/{id}")
+    public ApiResponse<RecipeResponse> likeRecipe(@PathVariable String id){
+        ApiResponse<RecipeResponse> response = new ApiResponse<>();
+        response.setMessage("Like Recipe: "+ id);
+        response.setResult(recipeService.Like(id));
         return response;
     }
 

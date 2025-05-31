@@ -5,7 +5,9 @@ import com.example.letmecookbe.dto.request.RecipeIngredientsUpdateRequest;
 import com.example.letmecookbe.dto.response.RecipeIngredientsResponse;
 import com.example.letmecookbe.dto.response.RecipeResponse;
 import com.example.letmecookbe.entity.Ingredients;
+import com.example.letmecookbe.entity.Recipe;
 import com.example.letmecookbe.entity.RecipeIngredients;
+import com.example.letmecookbe.entity.RecipeIngredientsId;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.RecipeIngredientsMapper;
@@ -30,14 +32,18 @@ public class RecipeIngredientsService {
     private final RecipeIngredientsRepository recipeIngredientsRepository;
 
     public RecipeIngredientsResponse createRecipeIngredients (RecipeIngredientsCreationRequest request){
-        if(!recipeRepository.existsById(request.getRecipeId())){
-            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
-        }
-        if(!ingredientsRepository.existsById(request.getIngredientId())){
-            throw new AppException(ErrorCode.INGREDIENT_NOT_FOUND);
-        }
+        Ingredients ingredient = ingredientsRepository.findById(request.getIngredientId()).orElseThrow(
+                ()-> new AppException(ErrorCode.INGREDIENT_NOT_FOUND)
+        );
+
+        Recipe recipe = recipeRepository.findById(request.getRecipeId()).orElseThrow(
+                ()-> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
 
         RecipeIngredients ingredients = recipeIngredientsMapper.toRecipeIngredients(request);
+        ingredients.setRecipe(recipe);
+        ingredients.setIngredient(ingredient);
+        ingredients.setId(new RecipeIngredientsId(recipe.getId(), ingredient.getId()));
         RecipeIngredients savedIngredients = RecipeIngredientsRepository.save(ingredients);
         return recipeIngredientsMapper.toRecipeIngredientsResponse(savedIngredients);
     }

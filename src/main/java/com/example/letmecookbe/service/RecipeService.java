@@ -135,7 +135,7 @@ public class RecipeService {
         return "delete recipe success: "+ id;
     }
 
-    public RecipeResponse incrementLike(String id) {
+    public RecipeResponse Like(String id) {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
@@ -143,6 +143,15 @@ public class RecipeService {
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
+
+//    public RecipeResponse disLike(String id) {
+//        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+//                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+//        );
+//        recipe.setTotalLikes(recipe.getTotalLikes() - 1);
+//        Recipe updatedRecipe = RecipeRepository.save(recipe);
+//        return recipeMapper.toRecipeResponse(updatedRecipe);
+//    }
 
     public RecipeResponse changeStatusToApprove(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(

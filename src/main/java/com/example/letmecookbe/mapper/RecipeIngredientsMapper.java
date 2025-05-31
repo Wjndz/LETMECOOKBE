@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface RecipeIngredientsMapper {
+
     RecipeIngredients toRecipeIngredients(RecipeIngredientsCreationRequest ingredients);
     RecipeIngredientsResponse toRecipeIngredientsResponse(RecipeIngredients recipeIngredients);
 }

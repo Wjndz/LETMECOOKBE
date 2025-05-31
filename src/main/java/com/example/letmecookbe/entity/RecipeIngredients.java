@@ -28,11 +28,3 @@ public class RecipeIngredients {
     int quantity;
 }
 
-@Embeddable
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class RecipeIngredientsId implements java.io.Serializable {
-    String recipeId;
-    String ingredientId;
-}
