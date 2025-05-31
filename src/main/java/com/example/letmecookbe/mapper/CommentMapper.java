@@ -14,6 +14,7 @@ public interface CommentMapper {
     @Mapping(source = "recipe.title", target = "recipeTitle")
     CommentResponse toCommentResponse(Comment comment);
 
+
     Comment toComment(CommentRequest request);
 
     // Chuyển List<Comment> Entities -> List<CommentResponse> DTOs

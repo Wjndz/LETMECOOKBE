@@ -166,7 +166,7 @@ public class AccountService {
         log.debug("Password reset successful for email [{}]", trimmedEmail);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public List<AccountResponse> getAllAcounts() {
         return accountRepository.findAll()
                 .stream()

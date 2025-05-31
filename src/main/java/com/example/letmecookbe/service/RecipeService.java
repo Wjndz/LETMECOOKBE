@@ -62,8 +62,6 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
 
-    
-
     public List<Recipe> getAllRecipe(){
         if(RecipeRepository.findAll().isEmpty())
             throw new AppException(ErrorCode.LIST_EMPTY);

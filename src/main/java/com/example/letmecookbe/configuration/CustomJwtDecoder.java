@@ -1,6 +1,9 @@
 package com.example.letmecookbe.configuration;
 
 import com.example.letmecookbe.dto.request.IntrospectRequest;
+import com.example.letmecookbe.entity.Account;
+import com.example.letmecookbe.enums.AccountStatus;
+import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.service.AuthService;
 import com.nimbusds.jose.JOSEException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Component
@@ -22,8 +27,12 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
+
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Override
     public Jwt decode(String token) throws JwtException {
@@ -47,6 +56,29 @@ public class CustomJwtDecoder implements JwtDecoder {
                     .build();
         }
 
-        return nimbusJwtDecoder.decode(token);
+        Jwt jwt = nimbusJwtDecoder.decode(token);
+
+        // Lấy email từ claim "sub" (đồng bộ với AuthService)
+        String email = jwt.getClaim("sub").toString();
+        Account account = accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new JwtException("Account not found"));
+
+        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
+            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
+                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+                account.setStatus(AccountStatus.ACTIVE);
+                account.setBanEndDate(null);
+                accountRepository.save(account);
+            } else {
+                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
+                        ? -1
+                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
+                String message = daysRemaining == -1
+                        ? "Tài khoản bị ban vĩnh viễn"
+                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+                throw new JwtException(message);
+            }
+        }
+        return jwt;
     }
 }

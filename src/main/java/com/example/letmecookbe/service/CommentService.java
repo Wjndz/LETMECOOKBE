@@ -42,7 +42,7 @@ public class CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
 
         Comment comment = commentMapper.toComment(request);
-
+        comment.setAccount(account);
         comment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }

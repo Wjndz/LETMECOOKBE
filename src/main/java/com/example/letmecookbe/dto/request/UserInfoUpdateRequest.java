@@ -1,9 +1,12 @@
 package com.example.letmecookbe.dto.request;
 
 import com.example.letmecookbe.enums.DietType;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -17,5 +20,13 @@ public class UserInfoUpdateRequest {
     String healthCondition;
     String sex;
     int age;
-    List<DietType> dietTypes;
+    @Builder.Default
+    List<DietType> dietTypesToAdd = new ArrayList<>();
+    @Builder.Default
+    List<DietType> dietTypesToRemove = new ArrayList<>();
+
+    @AssertTrue(message = "dietTypesToAdd and dietTypesToRemove must not contain the same values")
+    private boolean isValidDietTypes() {
+        return Collections.disjoint(dietTypesToAdd, dietTypesToRemove);
+    }
 }
