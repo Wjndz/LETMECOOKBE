@@ -21,11 +21,11 @@ import java.util.List;
 public class RecipeController {
     RecipeService recipeService;
 
-    @PostMapping("/create")
-    public ApiResponse<RecipeResponse> createRecipe(@RequestBody @Valid RecipeCreationRequest request){
+    @PostMapping("/create/{subCategoryId}")
+    public ApiResponse<RecipeResponse> createRecipe(@PathVariable String subCategoryId,@RequestBody @Valid RecipeCreationRequest request){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe: "+ request.getTitle());
-        response.setResult(recipeService.createRecipe(request));
+        response.setResult(recipeService.createRecipe(subCategoryId,request));
         return response;
     }
 
@@ -38,8 +38,8 @@ public class RecipeController {
     }
 
     @GetMapping("/getAll")
-    public ApiResponse<List<Recipe>> getAllRecipe(){
-        ApiResponse<List<Recipe>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeResponse>> getAllRecipe(){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
         response.setMessage("Get all Recipe: ");
         response.setResult(recipeService.getAllRecipe());
         return response;
@@ -58,6 +58,14 @@ public class RecipeController {
         ApiResponse<List<Recipe>> response = new ApiResponse<>();
         response.setMessage("find all Recipe by keyword: "+ keyword);
         response.setResult(recipeService.findRecipeByKeyword(keyword));
+        return response;
+    }
+
+    @GetMapping("/getRecipeByAccount")
+    public ApiResponse<List<RecipeResponse>> getRecipeByAccount(){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+        response.setMessage("Get all Recipe by Account: ");
+        response.setResult(recipeService.getAllRecipe());
         return response;
     }
 

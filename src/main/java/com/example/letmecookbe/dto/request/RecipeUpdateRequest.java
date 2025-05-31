@@ -14,5 +14,5 @@ public class RecipeUpdateRequest {
     String image;
     String difficulty;
     String cookingTime;
-    String status;
+    String subCategoryId;
 }

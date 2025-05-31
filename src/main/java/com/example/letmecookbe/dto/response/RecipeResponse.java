@@ -11,11 +11,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeResponse {
+    String id;
     String title;
     String description;
     String cookingTime;
     String totalLikes;
     String difficulty;
+    String status;
     String subCategoryId;
-    String AccountId;
+    String accountId;
 }
