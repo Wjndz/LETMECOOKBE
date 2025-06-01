@@ -12,7 +12,10 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeStepsResponse {
     int step;
+    String id;
     String description;
     String waitingTime;
+    String recipeId;
+    String recipeName;
     String recipeImage;
 }
