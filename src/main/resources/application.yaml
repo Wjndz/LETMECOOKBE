@@ -3,7 +3,7 @@ server:
 
 jwt:
   signerKey: "qUZg3QK6XUc8M6ydXOoEGekDIOEDNhlFqlFm7GdiqXus9EgqwzvBPEOI+fATDHZI"
-  valid-duration: 3600  # Thời gian hết hạn token (giây)
+  valid-duration: 36000  # Thời gian hết hạn token (giây)
   refresh-duration: 36000  # Thời gian hết hạn refresh token (giây)
 
 spring:
@@ -44,10 +44,10 @@ spring:
       max-request-size: 50MB  # Tăng giới hạn request tối đa lên 50MB
       file-size-threshold: 1MB  # File lớn hơn 1MB sẽ được ghi tạm vào đĩa
 
-# Cấu hình thư mục lưu trữ file và base URL
-app:
-  upload-dir: uploads/  # Thư mục lưu file (có thể thay đổi đường dẫn)
-  base-url: http://localhost:8080/upload/  # URL để truy cập file
+cloudinary:
+  cloud_name: dcvejqvlp
+  api_key: 387319119399615
+  api_secret: cXnMf-xXOJ_ncRZDw7O4vFiBi-4
 
 logging:
   level:

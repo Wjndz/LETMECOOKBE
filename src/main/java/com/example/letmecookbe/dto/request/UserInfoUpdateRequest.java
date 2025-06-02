@@ -17,7 +17,6 @@ import java.util.List;
 public class UserInfoUpdateRequest {
     int height;
     int weight;
-    String healthCondition;
     String sex;
     int age;
     @Builder.Default

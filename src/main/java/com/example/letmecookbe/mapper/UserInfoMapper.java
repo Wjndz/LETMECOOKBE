@@ -27,9 +27,6 @@ public interface UserInfoMapper {
         if (request.getWeight() > 0) {
             userInfo.setWeight(request.getWeight());
         }
-        if (request.getHealthCondition() != null) {
-            userInfo.setHealthCondition(request.getHealthCondition());
-        }
         if (request.getSex() != null) {
             userInfo.setSex(request.getSex());
         }

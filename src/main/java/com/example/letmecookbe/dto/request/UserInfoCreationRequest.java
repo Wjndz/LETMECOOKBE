@@ -26,8 +26,6 @@ public class UserInfoCreationRequest {
     @Min(value = 1, message = "Cân nặng phải là số dương")
     int weight;
 
-    String healthCondition;
-
     @Min(value = 1, message = "Tuổi phải là số dương")
     int age;
 

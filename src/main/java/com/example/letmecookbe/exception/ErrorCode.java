@@ -79,6 +79,7 @@ public enum ErrorCode {
     RECIPE_NOT_EMPTY_INSTRUCTION(2008, "Recipe instruction is not empty", HttpStatus.BAD_REQUEST),
     RECIPE_STEPS_NOT_EXISTED(2009, "Recipe steps not existed", HttpStatus.NOT_FOUND),
     INVALID_DIET_TYPE(2010, "Invalid diet type", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT(2011, "Search keyword cannot be empty", HttpStatus.BAD_REQUEST),
 
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),

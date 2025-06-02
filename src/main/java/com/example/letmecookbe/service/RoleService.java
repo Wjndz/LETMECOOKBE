@@ -2,6 +2,7 @@ package com.example.letmecookbe.service;
 
 import com.example.letmecookbe.dto.request.RoleRequest;
 import com.example.letmecookbe.dto.response.RoleResponse;
+import com.example.letmecookbe.entity.Role;
 import com.example.letmecookbe.mapper.RoleMapper;
 import com.example.letmecookbe.repository.PermissionRepository;
 import com.example.letmecookbe.repository.RoleRepository;
@@ -26,10 +27,22 @@ public class RoleService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public RoleResponse create(RoleRequest request) {
-        var role = roleMapper.toRole(request);
+        String roleName = request.getName();
+        Role role = roleRepository.findById(roleName).orElse(null);
+
+        if (role == null) {
+            role = roleMapper.toRole(request);
+        } else {
+            role.setDescription(request.getDescription());
+        }
 
         var permissions = permissionRepository.findAllById(request.getPermissions());
-        role.setPermissions(new HashSet<>(permissions));
+
+        if (role.getPermissions() == null) {
+            role.setPermissions(new HashSet<>(permissions));
+        } else {
+            role.getPermissions().addAll(permissions);
+        }
 
         role = roleRepository.save(role);
         return roleMapper.toRoleResponse(role);

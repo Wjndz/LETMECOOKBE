@@ -3,6 +3,7 @@ package com.example.letmecookbe.service;
 import com.example.letmecookbe.constant.PreDefinedRole;
 import com.example.letmecookbe.dto.request.AccountCreationRequest;
 import com.example.letmecookbe.dto.response.AccountResponse;
+import com.example.letmecookbe.dto.response.EmailResponse;
 import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.Role;
 import com.example.letmecookbe.enums.AccountStatus;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -167,11 +171,9 @@ public class AccountService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<AccountResponse> getAllAcounts() {
-        return accountRepository.findAll()
-                .stream()
-                .map(accountMapper::toAccountResponse)
-                .toList();
+    public Page<AccountResponse> getAllAccounts(Pageable pageable) {
+        Page<Account> accounts = accountRepository.findAll(pageable);
+        return accounts.map(accountMapper::toAccountResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -184,5 +186,16 @@ public class AccountService {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteAccount(String id) {
         accountRepository.deleteById(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<EmailResponse> searchByEmail(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_INPUT);
+        }
+        return accountRepository.searchByEmail(keyword.trim())
+                .stream()
+                .map(account -> EmailResponse.builder().email(account.getEmail()).build())
+                .collect(Collectors.toList());
     }
 }
