@@ -74,7 +74,8 @@ public enum ErrorCode {
     RECIPE_INGREDIENTS_EXISTED(1047,"Recipe ingredients already exists", HttpStatus.CONFLICT),
     RECIPE_STEPS_NOT_EXISTED(1048,"Recipe steps not found", HttpStatus.NOT_FOUND),
     RECIPE_STEPS_EXISTED(1049,"Recipe steps already exists", HttpStatus.CONFLICT),
-
+    FAVOURITE_RECIPE_NOT_EXISTED(1050,"Favourite recipe not found", HttpStatus.NOT_FOUND),
+    FAVOURITE_RECIPE_EXISTED(1051,"Favourite recipe already exists", HttpStatus.CONFLICT),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
 

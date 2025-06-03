@@ -11,11 +11,15 @@ import com.example.letmecookbe.mapper.FavouriteRecipeMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.FavouriteRecipeRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +43,42 @@ public class FavouriteRecipeService {
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
         Account account = accountRepository.findById(getAccountIdFromContext()).orElseThrow(
-                ()->new RuntimeException("Account not found")
+                ()->new AppException(ErrorCode.ACCOUNT_NOT_FOUND)
         );
+        if(favouriteRecipeRepository.existsByAccountIdAndRecipeId(getAccountIdFromContext(), recipeId)){
+                throw new AppException(ErrorCode.FAVOURITE_RECIPE_EXISTED);
+        }
         FavouriteRecipe favouriteRecipe = favouriteRecipeMapper.toFavouriteRecipe(request);
         favouriteRecipe.setAccount(account);
         favouriteRecipe.setRecipe(recipe);
         favouriteRecipeRepository.save(favouriteRecipe);
         return favouriteRecipeMapper.toFavouriteRecipeResponse(favouriteRecipe);
+    }
+
+    public List<FavouriteRecipeResponse> getFavouriteRecipeByAccountId (){
+        if(!accountRepository.existsById(getAccountIdFromContext())){
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+        List<FavouriteRecipe> favouriteRecipes = favouriteRecipeRepository.findFavouriteRecipeByAccountId(getAccountIdFromContext());
+        return favouriteRecipes.stream()
+                .map(favouriteRecipeMapper::toFavouriteRecipeResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public String deleteFavouriteRecipe(String recipeId) {
+        if (!recipeRepository.existsById(recipeId)) {
+            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
+        }
+        if (!accountRepository.existsById(getAccountIdFromContext())) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+        favouriteRecipeRepository.deleteByRecipeIdAndAccountId(recipeId, getAccountIdFromContext());
+        if (favouriteRecipeRepository.existsByAccountIdAndRecipeId(getAccountIdFromContext(), recipeId)) {
+            return "delete favourite recipe failed";
+        }
+        return "delete favourite recipe successfully";
     }
 }
 

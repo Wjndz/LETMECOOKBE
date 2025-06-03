@@ -84,9 +84,9 @@ public class RecipeIngredientsService {
         }
         recipeIngredientsRepository.delete(recipeIngredients);
         if(recipeIngredientsRepository.findRecipeIngredientsByRecipeIdAndIngredientId(RecipeId,IngredientId) != null){
-            return "delete recipe ingredients failed: "+ RecipeId + " " + IngredientId;
+            return "delete recipe ingredients failed";
         }
-        return "delete recipe ingredients success: "+ RecipeId + " " + IngredientId;
+        return "delete recipe ingredients successfully";
     }
 
 }
