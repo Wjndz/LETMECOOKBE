@@ -1,6 +1,5 @@
 package com.example.letmecookbe.dto.response;
 
-import com.example.letmecookbe.entity.MainCategory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

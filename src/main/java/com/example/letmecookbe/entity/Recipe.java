@@ -3,13 +3,14 @@ package com.example.letmecookbe.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.apache.catalina.User;
 
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter // <-- Rất quan trọng!
+@Setter // <-- Rất quan trọng!
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Recipe {
     @Id
@@ -20,10 +21,10 @@ public class Recipe {
     String img;
     String cookingTime;
     String difficulty;
-    String totalLikes;
+    int totalLikes;
 
     @ManyToOne
-    @JoinColumn(name = "subCateogry_id", referencedColumnName = "id")
+    @JoinColumn(name = "sub_Category_id", referencedColumnName = "id")
     SubCategory subCategory;
 
     @ManyToOne

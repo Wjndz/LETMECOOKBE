@@ -2,7 +2,6 @@ package com.example.letmecookbe.exception;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 import lombok.Getter;
@@ -56,10 +55,31 @@ public enum ErrorCode {
     INGREDIENT_NOT_FOUND(1042,"Ingredient not found", HttpStatus.NOT_FOUND),
     INGREDIENT_EXISTED(1043,"Ingredient already exists", HttpStatus.CONFLICT),
     INGREDIENT_NOT_EXISTED(1044,"Ingredient not found", HttpStatus.NOT_FOUND),
-
-
+    FILE_NOT_FOUND(1055, "File not found", HttpStatus.NOT_FOUND),
+    FILE_READ_FAILED(1056, "Failed to read file", HttpStatus.INTERNAL_SERVER_ERROR),
+    USER_INFO_NOT_EXISTED(1054, "User info not exists", HttpStatus.NOT_FOUND),
+    ACCOUNT_NOT_FOUND(1050, "Account not found", HttpStatus.NOT_FOUND),
+    EMAIL_ALREADY_EXISTED(1051, "Email already existed", HttpStatus.BAD_REQUEST),
+    ACCOUNT_NOT_EXISTED(1052, "Account not existed", HttpStatus.NOT_FOUND),
+    VERIFICATION_CODE_INVALID(1053, "Verification code invalid", HttpStatus.BAD_REQUEST),
+    INVALID_BAN_DURATION(1054, "Invalid ban duration", HttpStatus.BAD_REQUEST),
+    USER_INFO_NOT_FOUND(1055, "User info not found", HttpStatus.NOT_FOUND),
+    FILE_EMPTY(1056, "File is empty", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(1057, "File too large", HttpStatus.PAYLOAD_TOO_LARGE),
+    INVALID_FILE_TYPE(1058, "Invalid file type", HttpStatus.BAD_REQUEST),
+    FILE_UPLOAD_FAILED(1059, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    DELETE_FILE_FAILED(1060, "Delete file failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    RECIPE_NOT_FOUND(1045,"Recipe not found", HttpStatus.NOT_FOUND),
+    RECIPE_INGREDIENTS_NOT_EXISTED(1046,"Recipe ingredients not found", HttpStatus.NOT_FOUND),
+    RECIPE_INGREDIENTS_EXISTED(1047,"Recipe ingredients already exists", HttpStatus.CONFLICT),
+    RECIPE_STEPS_NOT_EXISTED(1048,"Recipe steps not found", HttpStatus.NOT_FOUND),
+    RECIPE_STEPS_EXISTED(1049,"Recipe steps already exists", HttpStatus.CONFLICT),
+    INVALID_DIET_TYPE(1061, "Invalid diet type", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED_ACTION(1050, "Unauthorized action", HttpStatus.UNAUTHORIZED),
+    REPORT_NOT_FOUND(1051, "Report not found", HttpStatus.NOT_FOUND),
+    CANNOT_REPORT_OWN_CONTENT(1052, "Cannot report own content", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
@@ -68,8 +88,8 @@ public enum ErrorCode {
         this.statusCode = statusCode;
     }
 
-    private final int code;
-    private final String message;
-    private final HttpStatusCode statusCode;
+    private int code;
+    private String message;
+    private HttpStatusCode statusCode;
 
 }

@@ -1,0 +1,29 @@
+package com.example.letmecookbe.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class RecipeIngredients {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
+
+    @ManyToOne
+    @JoinColumn(name = "recipe_id", referencedColumnName = "id")
+    Recipe recipe;
+
+    @ManyToOne
+    @JoinColumn(name = "ingredient_id", referencedColumnName = "id")
+    Ingredients ingredient;
+
+    int quantity;
+}
+

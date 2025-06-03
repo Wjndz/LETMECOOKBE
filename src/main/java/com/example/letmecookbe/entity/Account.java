@@ -29,9 +29,10 @@ public class Account {
     @Column(name = "status", nullable = false)
     AccountStatus status = AccountStatus.ACTIVE;
 
-//    Set<String> roles;
+    @ManyToMany()
+    Set<Role> roles;
+
     LocalDateTime createdAt;
-    //    String permissions;
     String code;
 
     @Column(name = "ban_end_date")

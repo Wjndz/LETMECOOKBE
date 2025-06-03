@@ -13,6 +13,4 @@ public class SubCategoryCreationRequest {
     @NotBlank(message = "NOT_NULL")
     String subCategoryName;
     String subCategoryImg;
-    @NotBlank(message = "NOT_NULL")
-    String categoryId;
 }

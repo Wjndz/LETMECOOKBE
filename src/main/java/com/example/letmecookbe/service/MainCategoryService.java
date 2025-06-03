@@ -7,7 +7,6 @@ import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.MainCategoryMapper;
 import com.example.letmecookbe.repository.MainCategoryRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,16 +19,15 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MainCategoryService {
     MainCategoryRepository repository;
-    @Qualifier("mainCategoryMapperImpl")
-    MainCategoryMapper mapper;
+    MainCategoryMapper mainCategoryMapper;
 
     public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
-        MainCategory main = mapper.toMainCategory(mainCategory);
+        MainCategory main = mainCategoryMapper.toMainCategory(mainCategory);
         MainCategory savedMain = repository.save(main);
-        return mapper.toMainCategoryResponse(savedMain);
+        return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
     public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
@@ -37,7 +35,7 @@ public class MainCategoryService {
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
         main.setCategoryName(mainCategory.getCategoryName());
         MainCategory savedMain = repository.save(main);
-        return mapper.toMainCategoryResponse(savedMain);
+        return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
     public List<MainCategory> getAllMainCategory(){
