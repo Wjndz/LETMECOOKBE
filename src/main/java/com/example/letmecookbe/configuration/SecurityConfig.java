@@ -1,7 +1,6 @@
 package com.example.letmecookbe.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,23 +25,17 @@ public class SecurityConfig {
             "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh",
-            "/upload/**",
-
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh"
     };
 
-    @Autowired
-    CustomJwtDecoder  customJwtDecoder;
-
-
+   @Autowired
+   CustomJwtDecoder  customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/recipes/{recipeId}/comments").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/recipes/{recipeId}/comments/{commentId}").hasRole("ADMIN")// <-- THÊM DÒNG NÀY VÀO ĐÂY
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
@@ -54,7 +47,6 @@ public class SecurityConfig {
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
-
         return httpSecurity.build();
     }
 
@@ -64,9 +56,9 @@ public class SecurityConfig {
     JwtAuthenticationConverter jwtAuthenticationConverter(){
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
-        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+
         return jwtAuthenticationConverter;
     }
 

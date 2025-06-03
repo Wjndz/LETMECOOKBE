@@ -6,11 +6,13 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RecipeIngredientsUpdateRequest {
-    @NotBlank(message = "NOT_NULL")
-    String ingredientId;
-    int Quantity;
+public class FavouriteRecipeRequest {
+//    @NotBlank(message = "NOT_NULL")
+//    String recipeId;
+//
+//    @NotBlank(message = "NOT_NULL")
+//    String accountId;
 }

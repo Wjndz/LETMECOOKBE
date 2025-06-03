@@ -21,32 +21,32 @@ import java.util.List;
 public class RecipeStepsController {
     RecipeStepsService recipeStepsService;
 
-    @PostMapping("/create")
-    ApiResponse<RecipeStepsResponse> createRecipeSteps(@RequestBody @Valid RecipeStepsCreationRequest request){
+    @PostMapping("/create/{id}")
+    public ApiResponse<RecipeStepsResponse> createRecipeSteps(@PathVariable String id,@RequestBody @Valid RecipeStepsCreationRequest request){
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe Steps");
-        response.setResult(recipeStepsService.createRecipeSteps(request));
+        response.setResult(recipeStepsService.createRecipeSteps(id, request));
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    ApiResponse<RecipeStepsResponse> updateRecipeSteps(@PathVariable String id,@RequestBody @Valid RecipeStepsUpdateRequest request){
+    @PutMapping("/update/{id}/{stepNum}")
+    public ApiResponse<RecipeStepsResponse> updateRecipeSteps(@PathVariable String id,@PathVariable int stepNum,@RequestBody @Valid RecipeStepsUpdateRequest request){
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe Steps");
-        response.setResult(recipeStepsService.updateRecipeSteps(id,request));
+        response.setResult(recipeStepsService.updateRecipeSteps(id,stepNum,request));
         return response;
     }
 
     @GetMapping("/getAllRecipeSteps/{id}")
-    ApiResponse<List<RecipeSteps>> getRecipeStepsByRecipeId(@PathVariable String id){
-        ApiResponse<List<RecipeSteps>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeStepsResponse>> getRecipeStepsByRecipeId(@PathVariable String id){
+        ApiResponse<List<RecipeStepsResponse>> response = new ApiResponse<>();
         response.setMessage("Get all recipe steps by recipe id: "+ id);
         response.setResult(recipeStepsService.getRecipeStepsByRecipeId(id));
         return response;
     }
 
     @DeleteMapping("/delete/{id}")
-    ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
+    public ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(recipeStepsService.deleteRecipeSteps(id));
         return response;

@@ -69,20 +69,16 @@ public enum ErrorCode {
     INVALID_FILE_TYPE(1058, "Invalid file type", HttpStatus.BAD_REQUEST),
     FILE_UPLOAD_FAILED(1059, "File upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
     DELETE_FILE_FAILED(1060, "Delete file failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    RECIPE_NOT_FOUND(2001, "Recipe not found", HttpStatus.NOT_FOUND),
-    RECIPE_INGREDIENTS_NOT_EXISTED(2002, "Recipe ingredients not existed", HttpStatus.NOT_FOUND),
-    RECIPE_INGREDIENTS_NOT_FOUND(2003, "Recipe ingredients not found", HttpStatus.NOT_FOUND),
-    RECIPE_NOT_EXISTED(2004, "Recipe not existed", HttpStatus.NOT_FOUND),
-    RECIPE_NOT_EXIST(2005, "Recipe does not exist", HttpStatus.NOT_FOUND),
-    RECIPE_NOT_EMPTY(2006, "Recipe is not empty", HttpStatus.BAD_REQUEST),
-    RECIPE_NOT_EMPTY_INGREDIENTS(2007, "Recipe ingredients is not empty", HttpStatus.BAD_REQUEST),
-    RECIPE_NOT_EMPTY_INSTRUCTION(2008, "Recipe instruction is not empty", HttpStatus.BAD_REQUEST),
-    RECIPE_STEPS_NOT_EXISTED(2009, "Recipe steps not existed", HttpStatus.NOT_FOUND),
-    INVALID_DIET_TYPE(2010, "Invalid diet type", HttpStatus.BAD_REQUEST),
-    INVALID_INPUT(2011, "Search keyword cannot be empty", HttpStatus.BAD_REQUEST),
-
+    RECIPE_NOT_FOUND(1045,"Recipe not found", HttpStatus.NOT_FOUND),
+    RECIPE_INGREDIENTS_NOT_EXISTED(1046,"Recipe ingredients not found", HttpStatus.NOT_FOUND),
+    RECIPE_INGREDIENTS_EXISTED(1047,"Recipe ingredients already exists", HttpStatus.CONFLICT),
+    RECIPE_STEPS_NOT_EXISTED(1048,"Recipe steps not found", HttpStatus.NOT_FOUND),
+    RECIPE_STEPS_EXISTED(1049,"Recipe steps already exists", HttpStatus.CONFLICT),
+    FAVOURITE_RECIPE_NOT_EXISTED(1050,"Favourite recipe not found", HttpStatus.NOT_FOUND),
+    FAVOURITE_RECIPE_EXISTED(1051,"Favourite recipe already exists", HttpStatus.CONFLICT),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
+
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

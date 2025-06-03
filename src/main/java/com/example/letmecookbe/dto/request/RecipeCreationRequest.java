@@ -28,10 +28,9 @@ public class RecipeCreationRequest {
     String cookingTime;
 
     String status;
-
-    @NotBlank(message = "NOT_NULL")
-    String subCategoryId;
-
-    @NotBlank(message = "NOT_NULL")
-    String accountId;
+//    @NotBlank(message = "NOT_NULL")
+//    String subCategoryId;
+//
+//    @NotBlank(message = "NOT_NULL")
+//    String accountId;
 }

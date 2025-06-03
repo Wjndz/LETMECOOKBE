@@ -7,22 +7,19 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RecipeSteps {
+public class FavouriteRecipe {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-
-    int step;
 
     @ManyToOne
     @JoinColumn(name = "recipe_id", referencedColumnName = "id")
     Recipe recipe;
 
-    String description;
-    String waitingTime;
-    String recipeStepsImg;
-
+    @ManyToOne
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    Account account;
 }

@@ -14,5 +14,5 @@ public class RecipeIngredientsCreationRequest {
     String recipeId;
     @NotBlank(message = "NOT_NULL")
     String ingredientId;
-    int Quantity;
+    int quantity;
 }

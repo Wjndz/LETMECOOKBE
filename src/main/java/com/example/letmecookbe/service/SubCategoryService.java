@@ -24,20 +24,19 @@ import java.util.List;
 public class SubCategoryService {
     MainCategoryRepository MainRepository;
     SubCategoryRepository SubRepository;
-    @Qualifier("subCategoryMapperImpl")
-    SubCategoryMapper mapper;
+    SubCategoryMapper subCategoryMapper;
 
-    public SubCategoryResponse createSubCategory( SubCategoryCreationRequest request){
-        MainCategory main = MainRepository.findById(request.getCategoryId()).orElseThrow(
+    public SubCategoryResponse createSubCategory(String id,SubCategoryCreationRequest request){
+        MainCategory main = MainRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST)
         );
         if(SubRepository.existsBySubCategoryName(request.getSubCategoryName())){
             throw new AppException(ErrorCode.SUB_CATEGORY_EXISTED);
         }
-        SubCategory sub = mapper.toSubCategory(request);
+        SubCategory sub = subCategoryMapper.toSubCategory(request);
         sub.setMainCategory(main);
         SubCategory savedSub = SubRepository.save(sub);
-        return mapper.toSubCategoryResponse(savedSub);
+        return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
     public SubCategoryResponse updateSubCategoryName(String id, SubCategoryUpdateRequest request){
@@ -57,7 +56,7 @@ public class SubCategoryService {
                     ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST)
             ));
         SubCategory savedSub = SubRepository.save(sub);
-        return mapper.toSubCategoryResponse(savedSub);
+        return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
     public List<SubCategory> getSubCategoryByManCategoryId(String id){

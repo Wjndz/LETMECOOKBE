@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface RecipeStepsRepository extends JpaRepository<RecipeSteps, String> {
+    boolean  existsByRecipeIdAndStep(String recipeId,int step);
     List<RecipeSteps> findRecipeStepsByRecipeId(String recipeId);
-    RecipeSteps findRecipeStepsByRecipeIdAndStep(String recipeId, String step);
+
+    RecipeSteps findRecipeStepsByRecipeIdAndStep(String recipeId, int step);
 
 }
