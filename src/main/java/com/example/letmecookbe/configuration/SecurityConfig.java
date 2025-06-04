@@ -25,7 +25,7 @@ public class SecurityConfig {
             "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh"
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google",
     };
 
    @Autowired

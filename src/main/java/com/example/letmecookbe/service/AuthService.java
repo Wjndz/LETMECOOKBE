@@ -4,6 +4,7 @@ import com.example.letmecookbe.dto.request.AuthRequest;
 import com.example.letmecookbe.dto.request.IntrospectRequest;
 import com.example.letmecookbe.dto.request.LogoutRequest;
 import com.example.letmecookbe.dto.request.RefreshRequest;
+import com.example.letmecookbe.dto.request.GoogleSignInRequest; // Thêm import
 import com.example.letmecookbe.dto.response.AuthResponse;
 import com.example.letmecookbe.dto.response.IntrospectResponse;
 import com.example.letmecookbe.entity.Account;
@@ -13,6 +14,10 @@ import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.InvalidatedTokenRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -31,6 +36,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -54,6 +60,10 @@ public class AuthService {
     @NonFinal
     @Value("${jwt.refresh-duration}")
     protected long REFRESH_DURATION;
+
+    @NonFinal
+    @Value("${google.client-id}")
+    protected String GOOGLE_CLIENT_ID;
 
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
@@ -103,6 +113,60 @@ public class AuthService {
         }
 
         var token = generateToken(account);
+        return AuthResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    public AuthResponse googleSignIn(GoogleSignInRequest request) throws Exception {
+        // Xác minh ID Token từ Google
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+                .build();
+
+        GoogleIdToken googleIdToken = verifier.verify(request.getIdToken());
+        if (googleIdToken == null) {
+            throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
+        }
+
+        GoogleIdToken.Payload payload = googleIdToken.getPayload();
+        String email = payload.getEmail();
+        String userId = payload.getSubject(); // Google user ID
+
+        // Tìm hoặc tạo tài khoản trong database
+        Account account = accountRepository.findAccountByEmail(email)
+                .orElseGet(() -> {
+                    Account newAccount = new Account();
+                    newAccount.setEmail(email);
+                    newAccount.setUsername(email.split("@")[0]); // Tạm dùng phần trước @ làm username
+                    newAccount.setPassword(""); // Không cần mật khẩu cho đăng nhập Google
+                    newAccount.setStatus(AccountStatus.ACTIVE);
+                    // Thêm các field khác nếu cần (ví dụ: roles, permissions)
+                    return accountRepository.save(newAccount);
+                });
+
+        // Kiểm tra trạng thái tài khoản
+        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
+            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
+                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+                account.setStatus(AccountStatus.ACTIVE);
+                account.setBanEndDate(null);
+                accountRepository.save(account);
+            } else {
+                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
+                        ? -1
+                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
+                String message = daysRemaining == -1
+                        ? "Tài khoản bị ban vĩnh viễn"
+                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+                throw new AppException(ErrorCode.ACCOUNT_BANNED);
+            }
+        }
+
+        // Tạo JWT token cho người dùng
+        String token = generateToken(account);
+
         return AuthResponse.builder()
                 .token(token)
                 .authenticated(true)

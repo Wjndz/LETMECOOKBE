@@ -53,4 +53,7 @@ logging:
   level:
     com.example.letmecookbe.service.EmailVerification: DEBUG
     com.example.letmecookbe.service.AccountService: DEBUG
-    com.example.letmecookbe.service.FileStorageService: DEBUG  # Thêm log cho FileStorageService
+    com.example.letmecookbe.service.FileStorageService: DEBUG
+
+google:
+  client-id: 407408718192.apps.googleusercontent.com
