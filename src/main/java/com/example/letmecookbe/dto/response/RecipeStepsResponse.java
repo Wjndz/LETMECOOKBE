@@ -17,5 +17,5 @@ public class RecipeStepsResponse {
     String waitingTime;
     String recipeId;
     String recipeName;
-    String recipeImage;
+    String recipeStepImage;
 }

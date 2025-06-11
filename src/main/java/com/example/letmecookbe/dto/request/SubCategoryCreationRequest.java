@@ -12,5 +12,5 @@ import org.hibernate.validator.constraints.NotBlank;
 public class SubCategoryCreationRequest {
     @NotBlank(message = "NOT_NULL")
     String subCategoryName;
-    String subCategoryImg;
+//    String subCategoryImg;
 }

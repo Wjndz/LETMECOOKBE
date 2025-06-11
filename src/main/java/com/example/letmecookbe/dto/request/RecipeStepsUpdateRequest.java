@@ -11,6 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class RecipeStepsUpdateRequest {
     int step;
     String description;
-    String recipeStepsImg;
-    String WaitingTime;
+    String waitingTime;
 }
