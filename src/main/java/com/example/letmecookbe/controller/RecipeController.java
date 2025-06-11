@@ -9,7 +9,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,19 +22,45 @@ import java.util.List;
 public class RecipeController {
     RecipeService recipeService;
 
-    @PostMapping("/create/{subCategoryId}")
-    public ApiResponse<RecipeResponse> createRecipe(@PathVariable String subCategoryId,@RequestBody @Valid RecipeCreationRequest request){
+    @PostMapping(value="/create/{subCategoryId}",consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<RecipeResponse> createRecipe(
+            @PathVariable String subCategoryId,
+            @RequestPart("title") String title,
+            @RequestPart("description") String description,
+            @RequestPart("difficulty") String difficulty,
+            @RequestPart("cookingTime") String cookingTime,
+            @RequestPart("file") MultipartFile file){
+        RecipeCreationRequest request = RecipeCreationRequest.builder()
+                .title(title)
+                .description(description)
+                .difficulty(difficulty)
+                .cookingTime(cookingTime)
+                .build();
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe: "+ request.getTitle());
-        response.setResult(recipeService.createRecipe(subCategoryId,request));
+        response.setResult(recipeService.createRecipe(subCategoryId,request,file));
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    public ApiResponse<RecipeResponse> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeUpdateRequest request){
+    @PutMapping(value = "/update/{id}",consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<RecipeResponse> updateRecipe(
+            @PathVariable String id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("difficulty") String difficulty,
+            @RequestParam("cookingTime") String cookingTime,
+            @RequestParam("subCategoryId") String subCategoryId,
+            @RequestPart(value = "file",required = false) MultipartFile file){
+        RecipeUpdateRequest request = RecipeUpdateRequest.builder()
+                .title(title)
+                .description(description)
+                .difficulty(difficulty)
+                .cookingTime(cookingTime)
+                .subCategoryId(subCategoryId)
+                .build();
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe: "+ request.getTitle());
-        response.setResult(recipeService.updateRecipe(id, request));
+        response.setResult(recipeService.updateRecipe(id, request, file));
         return response;
     }
 

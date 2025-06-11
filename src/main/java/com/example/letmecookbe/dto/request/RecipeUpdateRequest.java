@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 public class RecipeUpdateRequest {
     String title;
     String description;
-    String image;
+//    String image;
     String difficulty;
     String cookingTime;
     String subCategoryId;

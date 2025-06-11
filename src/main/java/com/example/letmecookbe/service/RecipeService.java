@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ public class RecipeService {
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
+    private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
         var context = SecurityContextHolder.getContext();
@@ -39,7 +41,7 @@ public class RecipeService {
         return account.getId();
     }
 
-    public RecipeResponse createRecipe(String subCategoryId,RecipeCreationRequest request){
+    public RecipeResponse createRecipe(String subCategoryId, RecipeCreationRequest request, MultipartFile file){
         SubCategory subCategory = subCategoryRepository.findById(subCategoryId).orElseThrow(
                 () -> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
         );
@@ -47,6 +49,8 @@ public class RecipeService {
                 ()->new RuntimeException("Account not found")
         );
         Recipe recipe = recipeMapper.toRecipe(request);
+        String recipeImg = fileStorageService.uploadFile(file);
+        recipe.setImg(recipeImg);
         recipe.setSubCategory(subCategory);
         recipe.setAccount(account);
         recipe.setStatus(String.valueOf(RecipeStatus.NOT_APPROVED));
@@ -54,7 +58,7 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
 
-    public RecipeResponse updateRecipe(String id, RecipeUpdateRequest updateRequest){
+    public RecipeResponse updateRecipe(String id, RecipeUpdateRequest updateRequest, MultipartFile file){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
@@ -71,6 +75,11 @@ public class RecipeService {
 
         if(!updateRequest.getCookingTime().isBlank())
             recipe.setCookingTime(updateRequest.getCookingTime());
+
+        if( file!= null && !file.isEmpty() ){
+            String recipeImg = fileStorageService.uploadFile(file);
+            recipe.setImg(recipeImg);
+        }
 
         if(!updateRequest.getSubCategoryId().isBlank()){
             SubCategory sub = subCategoryRepository.findById(updateRequest.getSubCategoryId()).orElseThrow(

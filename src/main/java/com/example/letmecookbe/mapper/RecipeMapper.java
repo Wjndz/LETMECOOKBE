@@ -14,6 +14,7 @@ public interface RecipeMapper {
     @Mapping(source = "account.id", target = "accountId")
     @Mapping(source = "subCategory.id", target = "subCategoryId")
     @Mapping(source = "recipe.id",target = "id")
+    @Mapping(source = "recipe.img", target = "image")
     @Mapping(source = "status", target = "status")
     RecipeResponse toRecipeResponse(Recipe recipe);
 

@@ -19,7 +19,7 @@ public class RecipeCreationRequest {
     @Size(min = 2, message ="RECIPE_DESCRIPTION_INVALID")
     String description;
 
-    String img;
+//    String img;
 
     @NotBlank(message = "NOT_NULL")
     String difficulty;
