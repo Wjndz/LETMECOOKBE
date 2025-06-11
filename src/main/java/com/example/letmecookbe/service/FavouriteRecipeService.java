@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class FavouriteRecipeService {
         return account.getId();
     }
 
+    @PreAuthorize("hasAuthority('CREATE_FAVOURITE_RECIPE')")
     public FavouriteRecipeResponse createFavouriteRecipe (String recipeId, FavouriteRecipeRequest request){
         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
@@ -55,6 +57,7 @@ public class FavouriteRecipeService {
         return favouriteRecipeMapper.toFavouriteRecipeResponse(favouriteRecipe);
     }
 
+    @PreAuthorize("hasAuthority('GET_FAVOURITE_RECIPE')")
     public List<FavouriteRecipeResponse> getFavouriteRecipeByAccountId (){
         if(!accountRepository.existsById(getAccountIdFromContext())){
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
@@ -66,7 +69,7 @@ public class FavouriteRecipeService {
     }
 
 
-    @Transactional
+    @PreAuthorize("hasAuthority('DELETE_FAVOURITE_RECIPE')")
     public String deleteFavouriteRecipe(String recipeId) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);

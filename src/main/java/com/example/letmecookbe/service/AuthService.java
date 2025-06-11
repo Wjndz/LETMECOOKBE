@@ -4,7 +4,7 @@ import com.example.letmecookbe.dto.request.AuthRequest;
 import com.example.letmecookbe.dto.request.IntrospectRequest;
 import com.example.letmecookbe.dto.request.LogoutRequest;
 import com.example.letmecookbe.dto.request.RefreshRequest;
-import com.example.letmecookbe.dto.request.GoogleSignInRequest; // Thêm import
+import com.example.letmecookbe.dto.request.GoogleSignInRequest;
 import com.example.letmecookbe.dto.response.AuthResponse;
 import com.example.letmecookbe.dto.response.IntrospectResponse;
 import com.example.letmecookbe.entity.Account;
@@ -36,10 +36,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -122,7 +119,10 @@ public class AuthService {
     public AuthResponse googleSignIn(GoogleSignInRequest request) throws Exception {
         // Xác minh ID Token từ Google
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
-                .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+                .setAudience(Arrays.asList(
+                        "810762213774-9pdqiru4ct3s03r42phjulqqqksf89ru.apps.googleusercontent.com", // Android Client ID
+                        "810762213774-j84nchg9c59vpo9p6k7mhn1qidj77cr9.apps.googleusercontent.com" // Web Client ID
+                ))
                 .build();
 
         GoogleIdToken googleIdToken = verifier.verify(request.getIdToken());

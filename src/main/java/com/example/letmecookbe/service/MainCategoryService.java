@@ -10,6 +10,7 @@ import com.example.letmecookbe.repository.MainCategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class MainCategoryService {
     MainCategoryRepository repository;
     MainCategoryMapper mainCategoryMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
@@ -30,6 +32,7 @@ public class MainCategoryService {
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
         MainCategory main = repository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
@@ -38,6 +41,7 @@ public class MainCategoryService {
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
+    @PreAuthorize("hasRole('GET_ALL_MAIN_CATEGORY')")
     public List<MainCategory> getAllMainCategory(){
         if(repository.findAll().isEmpty())
             throw new AppException(ErrorCode.LIST_EMPTY);

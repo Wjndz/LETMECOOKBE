@@ -30,11 +30,16 @@ public class FileStorageService {
         validateFile(file);
 
         try {
-            // Lấy tên file gốc và loại bỏ đuôi nếu đã có
             String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String fileNameWithoutExt = originalFilename.substring(0, originalFilename.lastIndexOf("."));
-            String fileName = UUID.randomUUID().toString() + "_" + fileNameWithoutExt + fileExtension;
+            String fileExtension = "";
+
+            // Get extension (like .jpg, .png)
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            // Generate a clean filename without any extensions
+            String fileName = UUID.randomUUID().toString();
 
             // Upload lên Cloudinary
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(),

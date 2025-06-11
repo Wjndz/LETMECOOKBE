@@ -56,4 +56,4 @@ logging:
     com.example.letmecookbe.service.FileStorageService: DEBUG
 
 google:
-  client-id: 407408718192.apps.googleusercontent.com
+  client-id: 810762213774-9pdqiru4ct3s03r42phjulqqqksf89ru.apps.googleusercontent.com

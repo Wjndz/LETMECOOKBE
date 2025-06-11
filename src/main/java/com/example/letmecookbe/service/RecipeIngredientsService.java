@@ -12,9 +12,11 @@ import com.example.letmecookbe.mapper.RecipeIngredientsMapper;
 import com.example.letmecookbe.repository.IngredientsRepository;
 import com.example.letmecookbe.repository.RecipeIngredientsRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
+import jakarta.annotation.PreDestroy;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class RecipeIngredientsService {
     RecipeIngredientsMapper recipeIngredientsMapper;
     private final RecipeIngredientsRepository recipeIngredientsRepository;
 
+    @PreAuthorize("hasAuthority('CREATE_RECIPE_INGREDIENTS')")
     public RecipeIngredientsResponse createRecipeIngredients (RecipeIngredientsCreationRequest request){
         Ingredients ingredient = ingredientsRepository.findById(request.getIngredientId()).orElseThrow(
                 ()-> new AppException(ErrorCode.INGREDIENT_NOT_FOUND)
@@ -46,6 +49,7 @@ public class RecipeIngredientsService {
         return recipeIngredientsMapper.toRecipeIngredientsResponse(savedIngredients);
     }
 
+@PreAuthorize("hasAuthority('UPDATE_RECIPE_INGREDIENTS')")
     public RecipeIngredientsResponse updateRecipeIngredients(String RecipeId,String ingredientId,RecipeIngredientsUpdateRequest request){
         RecipeIngredients recipeIngredients = recipeIngredientsRepository.findRecipeIngredientsByRecipeIdAndIngredientId(RecipeId,ingredientId);
         if(recipeIngredients == null){
@@ -67,6 +71,7 @@ public class RecipeIngredientsService {
         return recipeIngredientsMapper.toRecipeIngredientsResponse(savedRecipeIngredients);
     }
 
+    @PreAuthorize("hasAuthority('GET_RECIPE_INGREDIENTS_BY_RECIPE_ID')")
     public List<RecipeIngredientsResponse> getRecipeIngredientsByRecipeId(String RecipeId){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
@@ -77,6 +82,7 @@ public class RecipeIngredientsService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasAuthority('DELETE_RECIPE_INGREDIENTS')")
     public String deleteRecipeIngredients(String RecipeId,String IngredientId){
         RecipeIngredients recipeIngredients = recipeIngredientsRepository.findRecipeIngredientsByRecipeIdAndIngredientId(RecipeId,IngredientId);
         if(recipeIngredients == null){

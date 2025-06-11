@@ -1,10 +1,7 @@
 package com.example.letmecookbe.controller;
 
-import com.example.letmecookbe.dto.request.AuthRequest;
-import com.example.letmecookbe.dto.request.IntrospectRequest;
-import com.example.letmecookbe.dto.request.LogoutRequest;
-import com.example.letmecookbe.dto.request.RefreshRequest;
-import com.example.letmecookbe.dto.request.GoogleSignInRequest;
+import com.example.letmecookbe.dto.request.*;
+//import com.example.letmecookbe.dto.request.GoogleSignInRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.AuthResponse;
 import com.example.letmecookbe.dto.response.IntrospectResponse;
@@ -43,7 +40,7 @@ public class AuthController {
     }
 
     @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspecthist(@RequestBody IntrospectRequest request)
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request)
             throws ParseException, JOSEException {
         var result = authService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()

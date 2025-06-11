@@ -14,6 +14,7 @@ import com.example.letmecookbe.repository.RecipeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class CommentService {
     RecipeRepository recipeRepository;
 
     // --- 1. Tạo Comment ---
+    @PreAuthorize("hasAuthority('CREATE_COMMENT')")
     public CommentResponse createComment(String recipeId, CommentRequest request) {
         var context = SecurityContextHolder.getContext();
         String userEmail = context.getAuthentication().getName(); // Lấy EMAIL từ JWT subject
@@ -48,6 +50,7 @@ public class CommentService {
     }
 
     // --- 2. Chỉnh sửa Comment ---
+    @PreAuthorize("hasAuthority('UPDATE_COMMENT')")
     public CommentResponse updateComment(int commentId, CommentRequest request) {
         var context = SecurityContextHolder.getContext();
         String currentEmail = context.getAuthentication().getName(); // Đây là email của user hiện tại từ JWT
@@ -69,6 +72,7 @@ public class CommentService {
     }
 
     // --- 3. Xóa Comment ---
+    @PreAuthorize("hasAuthority('DELETE_COMMENT')")
     public void deleteComment(int commentId) {
         var context = SecurityContextHolder.getContext();
         String currentUserId = context.getAuthentication().getName();
@@ -78,6 +82,7 @@ public class CommentService {
     }
 
     // --- 4. Xem Comment của Bài đăng ---
+    @PreAuthorize("hasAuthority('GET_COMMENTS_BY_RECIPE')")
     public List<CommentResponse> getCommentsByRecipe(String recipeId) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND); // Sử dụng AppException
@@ -85,7 +90,9 @@ public class CommentService {
         List<Comment> comments = commentRepository.findByRecipe_Id(recipeId);
         return commentMapper.toCommentResponseList(comments);
     }
+
     // --- 5. Xem một Comment cụ thể theo ID ---
+    @PreAuthorize("hasAuthority('GET_COMMENT_BY_ID')")
     public CommentResponse getCommentById(int commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST)); // Sử dụng AppException
