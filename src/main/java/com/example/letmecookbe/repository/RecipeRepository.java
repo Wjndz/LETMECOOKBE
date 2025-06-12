@@ -27,4 +27,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
             "ORDER BY c.totalLikes DESC")
     List<Recipe> findRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId);
 
+    @Query("SELECT COUNT(c) FROM Recipe c WHERE c.account.id = :accountId")
+    int countRecipesByAccountId(String accountId);
 }

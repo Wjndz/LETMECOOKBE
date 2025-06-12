@@ -134,4 +134,12 @@ public class RecipeController {
          response.setResult(recipeService.GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId));
          return response;
     }
+
+    @GetMapping("/getTotalRecipe")
+    public ApiResponse<Integer> getTotalRecipe(){
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Total Recipe");
+        response.setResult(recipeService.countRecipeBySubCategoryId());
+        return response;
+    }
 }

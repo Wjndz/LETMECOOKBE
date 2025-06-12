@@ -186,4 +186,9 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
+    public int countRecipeBySubCategoryId(){
+        int count= RecipeRepository.countRecipesByAccountId(getAccountIdFromContext());
+        return count;
+    }
+
 }
