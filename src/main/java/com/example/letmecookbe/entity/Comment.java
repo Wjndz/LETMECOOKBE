@@ -3,7 +3,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
-
+import lombok.Getter;
+import lombok.Setter;
 @Entity
 @Data
 @Builder
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @Table(name = "comments")
 public class Comment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
     String commentText;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", referencedColumnName = "id")

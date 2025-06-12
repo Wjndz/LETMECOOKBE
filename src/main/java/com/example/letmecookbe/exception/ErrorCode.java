@@ -80,6 +80,8 @@ public enum ErrorCode {
     INVALID_GOOGLE_TOKEN(8887, "Invalid Google token", HttpStatus.UNAUTHORIZED),
     INVALID_INPUT(8886, "Invalid input", HttpStatus.BAD_REQUEST),
     INVALID_DIET_TYPE(8885, "Invalid diet type", HttpStatus.BAD_REQUEST),
+    REPORT_NOT_FOUND(8884, "Report not found", HttpStatus.NOT_FOUND),
+    CANNOT_REPORT_OWN_CONTENT(8883, "Cannot report own content", HttpStatus.BAD_REQUEST),
 
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
 

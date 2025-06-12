@@ -14,6 +14,8 @@ import com.example.letmecookbe.repository.RecipeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -51,7 +53,7 @@ public class CommentService {
 
     // --- 2. Chỉnh sửa Comment ---
     @PreAuthorize("hasAuthority('UPDATE_COMMENT')")
-    public CommentResponse updateComment(int commentId, CommentRequest request) {
+    public CommentResponse updateComment(String commentId, CommentRequest request) {
         var context = SecurityContextHolder.getContext();
         String currentEmail = context.getAuthentication().getName(); // Đây là email của user hiện tại từ JWT
 
@@ -73,7 +75,7 @@ public class CommentService {
 
     // --- 3. Xóa Comment ---
     @PreAuthorize("hasAuthority('DELETE_COMMENT')")
-    public void deleteComment(int commentId) {
+    public void deleteComment(String commentId) {
         var context = SecurityContextHolder.getContext();
         String currentUserId = context.getAuthentication().getName();
         Comment comment = commentRepository.findById(commentId)
@@ -83,17 +85,21 @@ public class CommentService {
 
     // --- 4. Xem Comment của Bài đăng ---
     @PreAuthorize("hasAuthority('GET_COMMENTS_BY_RECIPE')")
-    public List<CommentResponse> getCommentsByRecipe(String recipeId) {
+    public Page<CommentResponse> getCommentsByRecipe(String recipeId, Pageable pageable) { // Đã sửa đổi chữ ký
         if (!recipeRepository.existsById(recipeId)) {
-            throw new AppException(ErrorCode.RECIPE_NOT_FOUND); // Sử dụng AppException
+            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
-        List<Comment> comments = commentRepository.findByRecipe_Id(recipeId);
-        return commentMapper.toCommentResponseList(comments);
+        // Gọi phương thức findByRecipe_Id từ CommentRepository với Pageable
+        Page<Comment> commentsPage = commentRepository.findByRecipe_Id(recipeId, pageable);
+
+        // Sử dụng map để chuyển đổi Page<Comment> sang Page<CommentResponse>
+        return commentsPage.map(commentMapper::toCommentResponse);
     }
+
 
     // --- 5. Xem một Comment cụ thể theo ID ---
     @PreAuthorize("hasAuthority('GET_COMMENT_BY_ID')")
-    public CommentResponse getCommentById(int commentId) {
+    public CommentResponse getCommentById(String commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST)); // Sử dụng AppException
         return commentMapper.toCommentResponse(comment);
