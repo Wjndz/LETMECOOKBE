@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -171,5 +172,18 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
 
+    public List<RecipeResponse> getTop5RecipesByTotalLikes(){
+        List<Recipe> recipeList = RecipeRepository.findTop5RecipesByTotalLikes();
+        return recipeList.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<RecipeResponse> GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId){
+        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId);
+        return recipeList.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
 
 }

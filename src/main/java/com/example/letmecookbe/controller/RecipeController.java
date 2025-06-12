@@ -118,4 +118,20 @@ public class RecipeController {
         response.setResult(recipeService.deleteRecipe(id));
         return response;
     }
+
+    @GetMapping("/getTop5Recipe")
+    public ApiResponse<List<RecipeResponse>> getTop5Recipe(){
+        ApiResponse<List<RecipeResponse>> response= new ApiResponse<>();
+        response.setMessage("Top 5 recipe: ");
+        response.setResult(recipeService.getTop5RecipesByTotalLikes());
+        return response;
+    }
+
+    @GetMapping("/getRecipeBySubAndLike/{subCategoryId}")
+    public ApiResponse<List<RecipeResponse>> getRecipeBySubAndLike(@PathVariable String subCategoryId){
+         ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+         response.setMessage("Recipe By SubCategory AND TotalLike");
+         response.setResult(recipeService.GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId));
+         return response;
+    }
 }
