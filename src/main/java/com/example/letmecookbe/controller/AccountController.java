@@ -4,11 +4,15 @@ import com.example.letmecookbe.dto.request.AccountCreationRequest;
 import com.example.letmecookbe.dto.request.ResetPasswordRequest;
 import com.example.letmecookbe.dto.response.AccountResponse;
 import com.example.letmecookbe.dto.response.ApiResponse;
+import com.example.letmecookbe.dto.response.EmailResponse;
 import com.example.letmecookbe.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +41,7 @@ public class AccountController {
                 .build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{accountId}/manage")
     public ApiResponse<String> manageAccount(
             @PathVariable String accountId,
@@ -85,9 +90,9 @@ public class AccountController {
     }
 
     @GetMapping
-    public ApiResponse<List<AccountResponse>>getAllAccounts(){
-        List<AccountResponse> result = accountService.getAllAcounts();
-        return ApiResponse.<List<AccountResponse>>builder()
+    public ApiResponse<Page<AccountResponse>> getAllAccounts(Pageable pageable) {
+        Page<AccountResponse> result = accountService.getAllAccounts(pageable);
+        return ApiResponse.<Page<AccountResponse>>builder()
                 .result(result)
                 .build();
     }
@@ -100,13 +105,19 @@ public class AccountController {
                 .build();
     }
 
-
-
     @DeleteMapping("/{accountId}")
     public ApiResponse<String> deleteAccount(@PathVariable String accountId){
         accountService.deleteAccount(accountId);
         return ApiResponse.<String>builder()
                 .result("Tài khoản với id [" + accountId + "] đã bị xóa")
+                .build();
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<EmailResponse>> searchByEmail(@RequestParam("keyword") String keyword) {
+        List<EmailResponse> result = accountService.searchByEmail(keyword);
+        return ApiResponse.<List<EmailResponse>>builder()
+                .result(result)
                 .build();
     }
 }

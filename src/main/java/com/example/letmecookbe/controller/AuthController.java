@@ -4,6 +4,7 @@ import com.example.letmecookbe.dto.request.AuthRequest;
 import com.example.letmecookbe.dto.request.IntrospectRequest;
 import com.example.letmecookbe.dto.request.LogoutRequest;
 import com.example.letmecookbe.dto.request.RefreshRequest;
+import com.example.letmecookbe.dto.request.GoogleSignInRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.AuthResponse;
 import com.example.letmecookbe.dto.response.IntrospectResponse;
@@ -26,15 +27,23 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/token")
-   public ApiResponse<AuthResponse> authenticate(@RequestBody AuthRequest request){
+    public ApiResponse<AuthResponse> authenticate(@RequestBody AuthRequest request) {
         var result = authService.authenticate(request);
         return ApiResponse.<AuthResponse>builder()
                 .result(result)
                 .build();
     }
 
+    @PostMapping("/google")
+    public ApiResponse<AuthResponse> googleSignIn(@RequestBody GoogleSignInRequest request) throws Exception {
+        var result = authService.googleSignIn(request);
+        return ApiResponse.<AuthResponse>builder()
+                .result(result)
+                .build();
+    }
+
     @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request)
+    public ApiResponse<IntrospectResponse> introspecthist(@RequestBody IntrospectRequest request)
             throws ParseException, JOSEException {
         var result = authService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()

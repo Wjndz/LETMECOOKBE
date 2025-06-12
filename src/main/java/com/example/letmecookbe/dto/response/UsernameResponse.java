@@ -1,19 +1,16 @@
 package com.example.letmecookbe.dto.response;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-
-public class CreateAccountRequest {
-    String username;
-    String password;
-    String email;
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+public class UsernameResponse {
+    private String username;
 }

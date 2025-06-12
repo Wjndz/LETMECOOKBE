@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/main-category")
+@RequestMapping("/mainCategory")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MainCategoryController {
     MainCategoryService service;
     @PostMapping("/create")
-    ApiResponse<MainCategoryResponse> createMainCategory(@RequestBody @Valid MainCategoryCreationRequest request){
+    public ApiResponse<MainCategoryResponse> createMainCategory(@RequestBody @Valid MainCategoryCreationRequest request){
         ApiResponse<MainCategoryResponse> response = new ApiResponse<>();
         response.setMessage("Create Main Category: "+ request.getCategoryName());
         response.setResult(service.createMainCategory(request));
@@ -28,7 +28,7 @@ public class MainCategoryController {
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<MainCategoryResponse> updateCategoryName(@PathVariable String id, @RequestBody @Valid MainCategoryCreationRequest request){
+    public ApiResponse<MainCategoryResponse> updateCategoryName(@PathVariable String id, @RequestBody @Valid MainCategoryCreationRequest request){
         ApiResponse<MainCategoryResponse> response = new ApiResponse<>();
         response.setMessage("Update Main Category: "+ request.getCategoryName());
         response.setResult(service.updateCategoryName(id, request));
@@ -36,7 +36,7 @@ public class MainCategoryController {
     }
 
     @GetMapping("/getAll")
-    ApiResponse<List<MainCategory>> getAll(){
+    public ApiResponse<List<MainCategory>> getAll(){
         ApiResponse<List<MainCategory>> response = new ApiResponse<>();
         response.setMessage("Get all Main Categories: ");
         response.setResult(service.getAllMainCategory());

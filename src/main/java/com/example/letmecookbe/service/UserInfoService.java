@@ -3,6 +3,7 @@ package com.example.letmecookbe.service;
 import com.example.letmecookbe.dto.request.UserInfoCreationRequest;
 import com.example.letmecookbe.dto.request.UserInfoUpdateRequest;
 import com.example.letmecookbe.dto.response.UserInfoResponse;
+import com.example.letmecookbe.dto.response.UsernameResponse;
 import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.UserInfo;
 import com.example.letmecookbe.exception.AppException;
@@ -13,11 +14,16 @@ import com.example.letmecookbe.repository.UserInfoRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -48,12 +54,18 @@ public class UserInfoService {
         String accountId = getAccountIdFromContext();
 
         if (!userInfo.getAccount().getId().equals(accountId)) {
-            throw new SecurityException("Không có quyền chỉnh sửa thông tin này");
+            throw new AppException(ErrorCode.USER_INFO_NOT_FOUND);
         }
 
         userInfoMapper.updateUserInfo(request, userInfo);
         UserInfo updatedUserInfo = userInfoRepository.save(userInfo);
         return userInfoMapper.toUserInfoResponse(updatedUserInfo);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<UserInfoResponse> getAllUserInfo(Pageable pageable) {
+        Page<UserInfo> userInfos = userInfoRepository.findAll(pageable);
+        return userInfos.map(userInfoMapper::toUserInfoResponse);
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -94,7 +106,19 @@ public class UserInfoService {
         return userInfoMapper.toUserInfoResponse(userInfo); // Nếu không có avatar, trả về thông tin hiện tại
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UsernameResponse> searchByUsername(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_INPUT);
+        }
+        return userInfoRepository.searchByUsername(keyword.trim())
+                .stream()
+                .map(userInfo -> UsernameResponse.builder()
+                        .username(userInfo.getAccount().getUsername())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private String getAccountIdFromContext() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();

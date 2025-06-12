@@ -4,13 +4,18 @@ import com.example.letmecookbe.dto.request.UserInfoCreationRequest;
 import com.example.letmecookbe.dto.request.UserInfoUpdateRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.UserInfoResponse;
+import com.example.letmecookbe.dto.response.UsernameResponse;
 import com.example.letmecookbe.service.UserInfoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user-info")
@@ -29,10 +34,19 @@ public class UserInfoController {
                 .build();
     }
 
+
     @PutMapping("/{id}")
     public ApiResponse<UserInfoResponse> updateUserInfo(@PathVariable String id, @Valid @RequestBody UserInfoUpdateRequest request) {
         UserInfoResponse result = userInfoService.updateUserInfo(id, request);
         return ApiResponse.<UserInfoResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @GetMapping("/getAll")
+    public ApiResponse<Page<UserInfoResponse>> getAllUserInfo(Pageable pageable) {
+        Page<UserInfoResponse> result = userInfoService.getAllUserInfo(pageable);
+        return ApiResponse.<Page<UserInfoResponse>>builder()
                 .result(result)
                 .build();
     }
@@ -57,6 +71,14 @@ public class UserInfoController {
     public ApiResponse<UserInfoResponse> deleteAvatar() {
         UserInfoResponse result = userInfoService.deleteAvatar();
         return ApiResponse.<UserInfoResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<UsernameResponse>> searchByUsername(@RequestParam("keyword") String keyword) {
+        List<UsernameResponse> result = userInfoService.searchByUsername(keyword);
+        return ApiResponse.<List<UsernameResponse>>builder()
                 .result(result)
                 .build();
     }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,23 +25,25 @@ import java.util.List;
 public class SubCategoryService {
     MainCategoryRepository MainRepository;
     SubCategoryRepository SubRepository;
-    @Qualifier("subCategoryMapperImpl")
-    SubCategoryMapper mapper;
+    SubCategoryMapper subCategoryMapper;
+    private final FileStorageService fileStorageService;
 
-    public SubCategoryResponse createSubCategory( SubCategoryCreationRequest request){
-        MainCategory main = MainRepository.findById(request.getCategoryId()).orElseThrow(
+    public SubCategoryResponse createSubCategory(String id,SubCategoryCreationRequest request, MultipartFile image )  {
+        MainCategory main = MainRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST)
         );
         if(SubRepository.existsBySubCategoryName(request.getSubCategoryName())){
             throw new AppException(ErrorCode.SUB_CATEGORY_EXISTED);
         }
-        SubCategory sub = mapper.toSubCategory(request);
+        String subImageUrl = fileStorageService.uploadFile(image);
+        SubCategory sub = subCategoryMapper.toSubCategory(request);
         sub.setMainCategory(main);
+        sub.setSubCategoryImg(subImageUrl);
         SubCategory savedSub = SubRepository.save(sub);
-        return mapper.toSubCategoryResponse(savedSub);
+        return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
-    public SubCategoryResponse updateSubCategoryName(String id, SubCategoryUpdateRequest request){
+    public SubCategoryResponse updateSubCategoryName(String id, SubCategoryUpdateRequest request, MultipartFile image )  {
         SubCategory sub = SubRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
         );
@@ -50,14 +53,16 @@ public class SubCategoryService {
             }
             sub.setSubCategoryName(request.getSubCategoryName());
         }
-        if(!request.getSubCategoryImg().isBlank())
-            sub.setSubCategoryImg(request.getSubCategoryImg());
+        if (image != null && !image.isEmpty()) {
+            String subImageUrl = fileStorageService.uploadFile(image);
+            sub.setSubCategoryImg(subImageUrl);
+        }
         if(!request.getCategoryId().isBlank())
             sub.setMainCategory(MainRepository.findById(request.getCategoryId()).orElseThrow(
                     ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST)
             ));
         SubCategory savedSub = SubRepository.save(sub);
-        return mapper.toSubCategoryResponse(savedSub);
+        return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
     public List<SubCategory> getSubCategoryByManCategoryId(String id){
@@ -71,6 +76,9 @@ public class SubCategoryService {
         SubCategory sub = SubRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
         );
+        if (sub.getSubCategoryName() != null) {
+            fileStorageService.deleteFile(sub.getSubCategoryImg());
+        }
         SubRepository.delete(sub);
         if(SubRepository.existsBySubCategoryName(sub.getSubCategoryName())){
             return "delete sub category failed: "+ id;

@@ -3,6 +3,7 @@ package com.example.letmecookbe.service;
 import com.example.letmecookbe.dto.request.RecipeStepsCreationRequest;
 import com.example.letmecookbe.dto.request.RecipeStepsUpdateRequest;
 import com.example.letmecookbe.dto.response.RecipeStepsResponse;
+import com.example.letmecookbe.entity.Recipe;
 import com.example.letmecookbe.entity.RecipeSteps;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
@@ -13,8 +14,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,27 +26,39 @@ public class RecipeStepsService {
     RecipeStepsRepository recipeStepsRepository;
     RecipeStepsMapper recipeStepsMapper;
     RecipeRepository recipeRepository;
+    private final FileStorageService fileStorageService;
 
-    public RecipeStepsResponse createRecipeSteps(RecipeStepsCreationRequest request){
-        if(!recipeRepository.existsById(request.getRecipeId())){
-            throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
+    public RecipeStepsResponse createRecipeSteps(String id, RecipeStepsCreationRequest request, MultipartFile file) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        if(recipeStepsRepository.existsByRecipeIdAndStep(id,request.getStep())){
+            throw new AppException(ErrorCode.RECIPE_STEPS_EXISTED);
         }
+
         RecipeSteps recipeSteps = recipeStepsMapper.toRecipeSteps(request);
+        if(file != null && !file.isEmpty()){
+            String ImgUrl = fileStorageService.uploadFile(file);
+            recipeSteps.setRecipeStepsImg(ImgUrl);
+        }else{
+            recipeSteps.setRecipeStepsImg(null);
+        }
+        recipeSteps.setRecipe(recipe);
         RecipeSteps savedRecipeSteps = recipeStepsRepository.save(recipeSteps);
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
-    public RecipeStepsResponse updateRecipeSteps(String RecipeId, RecipeStepsUpdateRequest request){
+    public RecipeStepsResponse updateRecipeSteps(String RecipeId,int stepNum, RecipeStepsUpdateRequest request, MultipartFile file){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
 
-        RecipeSteps recipeSteps = recipeStepsRepository.findRecipeStepsByRecipeIdAndStep(RecipeId,String.valueOf(request.getStep()));
+        RecipeSteps recipeSteps = recipeStepsRepository.findRecipeStepsByRecipeIdAndStep(RecipeId,stepNum);
         if(recipeSteps == null){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);
         }
-        if(request.getStep() !=0){
-            recipeSteps.setStep(recipeSteps.getStep());
+        if (request.getStep() > 0 && request.getStep() != stepNum) {
+            recipeSteps.setStep(request.getStep());
         }
         if(!request.getDescription().isBlank()){
             recipeSteps.setDescription(request.getDescription());
@@ -51,18 +66,22 @@ public class RecipeStepsService {
         if(!request.getWaitingTime().isBlank()){
             recipeSteps.setWaitingTime(request.getWaitingTime());
         }
-        if(!request.getImage().isBlank()){
-            recipeSteps.setRecipeStepsImg(request.getImage());
+        if(file != null && !file.isEmpty()){
+            String ImgUrl = fileStorageService.uploadFile(file);
+            recipeSteps.setRecipeStepsImg(ImgUrl);
         }
         RecipeSteps savedRecipeSteps = recipeStepsRepository.save(recipeSteps);
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
-    public List<RecipeSteps> getRecipeStepsByRecipeId(String RecipeId){
+    public List<RecipeStepsResponse> getRecipeStepsByRecipeId(String RecipeId){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
-        return recipeStepsRepository.findRecipeStepsByRecipeId(RecipeId);
+        List<RecipeSteps> recipeSteps = recipeStepsRepository.findRecipeStepsByRecipeId(RecipeId);
+        return  recipeSteps.stream()
+                .map(recipeStepsMapper::toRecipeStepsResponse)
+                .collect(Collectors.toList());
     }
 
     public String deleteRecipeSteps(String RecipeStepsId){

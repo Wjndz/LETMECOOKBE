@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,32 +23,63 @@ import java.util.List;
 public class RecipeStepsController {
     RecipeStepsService recipeStepsService;
 
-    @PostMapping("/create")
-    ApiResponse<RecipeStepsResponse> createRecipeSteps(@RequestBody @Valid RecipeStepsCreationRequest request){
+    @PostMapping(value = "/create/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<RecipeStepsResponse> createRecipeSteps(
+            @PathVariable String id,
+            @RequestPart("step") String step,
+            @RequestPart("description") String description,
+            @RequestPart("waitingTime") String waitingTime,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        int step2 = Integer.parseInt(step);
+        RecipeStepsCreationRequest request = RecipeStepsCreationRequest.builder()
+                .step(step2)
+                .description(description)
+                .waitingTime(waitingTime)
+                .build();
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Create Recipe Steps");
-        response.setResult(recipeStepsService.createRecipeSteps(request));
+        response.setResult(recipeStepsService.createRecipeSteps(id, request,file));
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    ApiResponse<RecipeStepsResponse> updateRecipeSteps(@PathVariable String id,@RequestBody @Valid RecipeStepsUpdateRequest request){
+    @PutMapping(value = "/update/{id}/{step}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<RecipeStepsResponse> updateRecipeSteps(
+            @PathVariable String id,
+            @PathVariable int step,
+            @RequestParam("step") String stepNum,
+            @RequestParam("description") String description,
+            @RequestParam("waitingTime") String waitingTime,
+            @RequestPart(value = "file",required = false) MultipartFile file) {
+
+        Integer newStep = null;
+        if (stepNum != null && !stepNum.trim().isEmpty()) {
+            try {
+                newStep = Integer.parseInt(stepNum.trim());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid step number: " + stepNum);
+            }
+        }
+        RecipeStepsUpdateRequest request = RecipeStepsUpdateRequest.builder()
+                .step(newStep != null ? newStep : 0)
+                .description(description)
+                .waitingTime(waitingTime)
+                .build();
         ApiResponse<RecipeStepsResponse> response = new ApiResponse<>();
         response.setMessage("Update Recipe Steps");
-        response.setResult(recipeStepsService.updateRecipeSteps(id,request));
+        response.setResult(recipeStepsService.updateRecipeSteps(id,step,request,file));
         return response;
     }
 
     @GetMapping("/getAllRecipeSteps/{id}")
-    ApiResponse<List<RecipeSteps>> getRecipeStepsByRecipeId(@PathVariable String id){
-        ApiResponse<List<RecipeSteps>> response = new ApiResponse<>();
+    public ApiResponse<List<RecipeStepsResponse>> getRecipeStepsByRecipeId(@PathVariable String id){
+        ApiResponse<List<RecipeStepsResponse>> response = new ApiResponse<>();
         response.setMessage("Get all recipe steps by recipe id: "+ id);
         response.setResult(recipeStepsService.getRecipeStepsByRecipeId(id));
         return response;
     }
 
     @DeleteMapping("/delete/{id}")
-    ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
+    public ApiResponse<String> deleteRecipeSteps(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(recipeStepsService.deleteRecipeSteps(id));
         return response;

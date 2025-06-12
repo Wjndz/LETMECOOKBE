@@ -18,7 +18,6 @@ public class Role {
     String name;
     String description;
 
-
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToMany
     Set<Permission> permissions;
 }

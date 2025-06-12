@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -11,11 +13,15 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeResponse {
+    String id;
     String title;
     String description;
     String cookingTime;
     String totalLikes;
     String difficulty;
+    String status;
+    String image;
     String subCategoryId;
-    String AccountId;
+    String accountId;
+    LocalDateTime createAt;
 }

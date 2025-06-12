@@ -21,7 +21,6 @@ public class UserInfoResponse {
     String sex;
     int height;
     int weight;
-    String healthCondition;
     int age;
     LocalDate dob;
     String avatar;

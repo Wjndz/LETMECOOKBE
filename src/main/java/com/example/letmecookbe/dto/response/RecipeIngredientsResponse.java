@@ -13,5 +13,6 @@ import lombok.experimental.FieldDefaults;
 public class RecipeIngredientsResponse {
     String recipeId;
     String ingredientId;
+    String ingredientName;
     String quantity;
 }

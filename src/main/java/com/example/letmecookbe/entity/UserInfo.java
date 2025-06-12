@@ -23,7 +23,6 @@ public class UserInfo {
     String sex;
     int height;
     int weight;
-    String healthCondition;
     int age;
     LocalDate dob;
     String avatar;
