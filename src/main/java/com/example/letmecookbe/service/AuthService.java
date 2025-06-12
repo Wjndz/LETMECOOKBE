@@ -28,6 +28,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -109,9 +111,11 @@ public class AuthService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        var token = generateToken(account);
+        var token = generateToken(account, false);
+        var refreshToken = generateToken(account, true);
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
     }
@@ -165,7 +169,7 @@ public class AuthService {
         }
 
         // Tạo JWT token cho người dùng
-        String token = generateToken(account);
+        String token = generateToken(account, false);
 
         return AuthResponse.builder()
                 .token(token)
@@ -193,18 +197,7 @@ public class AuthService {
             throws ParseException, JOSEException {
         var signedJWT = verifyToken(request.getToken(), true);
 
-        var jit = signedJWT.getJWTClaimsSet().getJWTID();
-        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jit)
-                .expiryTime(expiryTime)
-                .build();
-
-        invalidatedTokenRepository.save(invalidatedToken);
-
         var email = signedJWT.getJWTClaimsSet().getSubject();
-
         var account = accountRepository.findAccountByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
@@ -226,15 +219,17 @@ public class AuthService {
             }
         }
 
-        var token = generateToken(account);
+        var token = generateToken(account, false);
+
 
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(request.getToken())
                 .authenticated(true)
                 .build();
     }
 
-    private String generateToken(Account account) {
+    private String generateToken(Account account, boolean isRefresh) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
@@ -242,10 +237,10 @@ public class AuthService {
                 .issuer("letmecook.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
+                        Instant.now().plus(isRefresh ? REFRESH_DURATION : VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
-                .claim("scope", buildScope(account))
+                .claim("scope", isRefresh ? "REFRESH" : buildScope(account))
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -263,13 +258,9 @@ public class AuthService {
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expiryTime = (isRefresh)
-                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime()
-                .toInstant().plus(REFRESH_DURATION, ChronoUnit.SECONDS).toEpochMilli())
-                : signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
@@ -279,6 +270,13 @@ public class AuthService {
         if (invalidatedTokenRepository
                 .existsById(signedJWT.getJWTClaimsSet().getJWTID()))
             throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (isRefresh) {
+            String scope = signedJWT.getJWTClaimsSet().getStringClaim("scope");
+            if (!"REFRESH".equals(scope)) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
+        }
 
         return signedJWT;
     }
@@ -300,4 +298,13 @@ public class AuthService {
         }
         return stringJoiner.toString();
     }
+
+    public Account getCurrentAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // ... logic lấy identifier từ authentication ...
+        String email = authentication.getName(); // Ví dụ đơn giản, có thể phức tạp hơn với JWT
+        return accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
 }

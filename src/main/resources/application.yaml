@@ -3,7 +3,7 @@ server:
 
 jwt:
   signerKey: "qUZg3QK6XUc8M6ydXOoEGekDIOEDNhlFqlFm7GdiqXus9EgqwzvBPEOI+fATDHZI"
-  valid-duration: 36000  # Thời gian hết hạn token (giây)
+  valid-duration: 3600  # Thời gian hết hạn token (giây)
   refresh-duration: 36000  # Thời gian hết hạn refresh token (giây)
 
 spring:

@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,7 +91,7 @@ public class AccountController {
     }
 
     @GetMapping
-    public ApiResponse<Page<AccountResponse>> getAllAccounts(Pageable pageable) {
+    public ApiResponse<Page<AccountResponse>> getAllAccounts(@PageableDefault(size = 3, page = 0) Pageable pageable) {
         Page<AccountResponse> result = accountService.getAllAccounts(pageable);
         return ApiResponse.<Page<AccountResponse>>builder()
                 .result(result)

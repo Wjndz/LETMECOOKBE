@@ -62,7 +62,7 @@ public class SubCategoryService {
         return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
-    @PreAuthorize("hasRole('GET_SUB_CATEGORY_BY_MAIN_CATEGORY')")
+    @PreAuthorize("hasAuthority('GET_SUB_CATEGORY_BY_MAIN_CATEGORY')")
     public List<SubCategory> getSubCategoryByManCategoryId(String id){
         if(!MainRepository.existsById(id)){
             throw new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST);

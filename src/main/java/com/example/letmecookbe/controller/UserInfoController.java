@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +45,7 @@ public class UserInfoController {
     }
 
     @GetMapping("/getAll")
-    public ApiResponse<Page<UserInfoResponse>> getAllUserInfo(Pageable pageable) {
+    public ApiResponse<Page<UserInfoResponse>> getAllUserInfo(@PageableDefault(size = 3, page = 0) Pageable pageable) {
         Page<UserInfoResponse> result = userInfoService.getAllUserInfo(pageable);
         return ApiResponse.<Page<UserInfoResponse>>builder()
                 .result(result)

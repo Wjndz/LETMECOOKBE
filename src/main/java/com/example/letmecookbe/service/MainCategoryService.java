@@ -41,7 +41,7 @@ public class MainCategoryService {
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
-    @PreAuthorize("hasRole('GET_ALL_MAIN_CATEGORY')")
+    @PreAuthorize("hasAuthority('GET_ALL_MAIN_CATEGORY')")
     public List<MainCategory> getAllMainCategory(){
         if(repository.findAll().isEmpty())
             throw new AppException(ErrorCode.LIST_EMPTY);
