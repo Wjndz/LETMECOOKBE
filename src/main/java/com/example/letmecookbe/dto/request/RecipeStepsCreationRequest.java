@@ -27,6 +27,6 @@ public class RecipeStepsCreationRequest {
     @NotBlank(message = "NOT_NULL")
     String waitingTime;
 
-    String recipeStepsImg;
+//    String recipeStepsImg;
 
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,6 +20,8 @@ public class RecipeResponse {
     String totalLikes;
     String difficulty;
     String status;
+    String image;
     String subCategoryId;
     String accountId;
+    LocalDateTime createAt;
 }

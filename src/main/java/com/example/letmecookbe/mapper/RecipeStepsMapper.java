@@ -11,7 +11,7 @@ public interface RecipeStepsMapper {
     RecipeSteps toRecipeSteps(RecipeStepsCreationRequest recipeSteps);
 
     @Mapping(source = "recipe.title", target = "recipeName")
-    @Mapping(source = "recipe.img",target = "recipeImage")
+    @Mapping(source = "recipeSteps.recipeStepsImg",target = "recipeStepImage")
     @Mapping(source = "recipeSteps.id", target = "id")
     RecipeStepsResponse toRecipeStepsResponse(RecipeSteps recipeSteps);
 }

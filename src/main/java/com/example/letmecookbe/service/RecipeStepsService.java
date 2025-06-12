@@ -13,8 +13,8 @@ import com.example.letmecookbe.repository.RecipeStepsRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,23 +26,29 @@ public class RecipeStepsService {
     RecipeStepsRepository recipeStepsRepository;
     RecipeStepsMapper recipeStepsMapper;
     RecipeRepository recipeRepository;
+    private final FileStorageService fileStorageService;
 
-    @PreAuthorize("hasAuthority('CREATE_RECIPE_STEPS')")
-    public RecipeStepsResponse createRecipeSteps(String id,RecipeStepsCreationRequest request){
+    public RecipeStepsResponse createRecipeSteps(String id, RecipeStepsCreationRequest request, MultipartFile file) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
         if(recipeStepsRepository.existsByRecipeIdAndStep(id,request.getStep())){
             throw new AppException(ErrorCode.RECIPE_STEPS_EXISTED);
         }
+
         RecipeSteps recipeSteps = recipeStepsMapper.toRecipeSteps(request);
+        if(file != null && !file.isEmpty()){
+            String ImgUrl = fileStorageService.uploadFile(file);
+            recipeSteps.setRecipeStepsImg(ImgUrl);
+        }else{
+            recipeSteps.setRecipeStepsImg(null);
+        }
         recipeSteps.setRecipe(recipe);
         RecipeSteps savedRecipeSteps = recipeStepsRepository.save(recipeSteps);
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_RECIPE_STEPS')")
-    public RecipeStepsResponse updateRecipeSteps(String RecipeId,int stepNum, RecipeStepsUpdateRequest request){
+    public RecipeStepsResponse updateRecipeSteps(String RecipeId,int stepNum, RecipeStepsUpdateRequest request, MultipartFile file){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
@@ -51,8 +57,8 @@ public class RecipeStepsService {
         if(recipeSteps == null){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);
         }
-        if(request.getStep() !=0){
-            recipeSteps.setStep(recipeSteps.getStep());
+        if (request.getStep() > 0 && request.getStep() != stepNum) {
+            recipeSteps.setStep(request.getStep());
         }
         if(!request.getDescription().isBlank()){
             recipeSteps.setDescription(request.getDescription());
@@ -60,14 +66,14 @@ public class RecipeStepsService {
         if(!request.getWaitingTime().isBlank()){
             recipeSteps.setWaitingTime(request.getWaitingTime());
         }
-        if(!request.getRecipeStepsImg().isBlank()){
-            recipeSteps.setRecipeStepsImg(request.getRecipeStepsImg());
+        if(file != null && !file.isEmpty()){
+            String ImgUrl = fileStorageService.uploadFile(file);
+            recipeSteps.setRecipeStepsImg(ImgUrl);
         }
         RecipeSteps savedRecipeSteps = recipeStepsRepository.save(recipeSteps);
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
-    @PreAuthorize("hasAuthority('GET_RECIPE_STEPS_BY_RECIPE_ID')")
     public List<RecipeStepsResponse> getRecipeStepsByRecipeId(String RecipeId){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
@@ -78,8 +84,6 @@ public class RecipeStepsService {
                 .collect(Collectors.toList());
     }
 
-
-    @PreAuthorize("hasAuthority('DELETE_RECIPE_STEPS_BY_RECIPE_ID')")
     public String deleteRecipeSteps(String RecipeStepsId){
         if(!recipeStepsRepository.existsById(RecipeStepsId)){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);

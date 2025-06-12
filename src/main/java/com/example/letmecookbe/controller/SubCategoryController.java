@@ -10,8 +10,11 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.util.List;
 
 @RestController
@@ -20,21 +23,42 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SubCategoryController {
     SubCategoryService service;
-    @PostMapping("/create/{id}")
-    public ApiResponse<SubCategoryResponse> createSubCategory(@PathVariable String id, @RequestBody @Valid SubCategoryCreationRequest request){
+
+    @PostMapping(value = "/create/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<SubCategoryResponse> createSubCategory(
+            @PathVariable String id,
+            @RequestPart("subCategoryName") String subCategoryName,
+            @RequestPart("file") MultipartFile file) {
+
+        SubCategoryCreationRequest request = SubCategoryCreationRequest.builder()
+                .subCategoryName(subCategoryName)
+                .build();
+
         ApiResponse<SubCategoryResponse> response = new ApiResponse<>();
-        response.setMessage("create sub category: "+ request.getSubCategoryName());
-        response.setResult(service.createSubCategory(id, request));
+        response.setMessage("create sub category: " + subCategoryName);
+        response.setResult(service.createSubCategory(id, request, file));
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    public ApiResponse<SubCategoryResponse> updateSubCategoryName(@PathVariable String id, @RequestBody @Valid SubCategoryUpdateRequest request){
+
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<SubCategoryResponse> updateSubCategoryName(
+            @PathVariable String id,
+            @RequestParam("subCategoryName") String subCategoryName,
+            @RequestParam("categoryId") String categoryId,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        SubCategoryUpdateRequest request = SubCategoryUpdateRequest.builder()
+                .subCategoryName(subCategoryName)
+                .categoryId(categoryId)
+                .build();
+
         ApiResponse<SubCategoryResponse> response = new ApiResponse<>();
-        response.setMessage("update sub category: "+ request.getSubCategoryName());
-        response.setResult(service.updateSubCategoryName(id, request));
+        response.setMessage("update sub category: " + request.getSubCategoryName());
+        response.setResult(service.updateSubCategoryName(id, request, file));
         return response;
     }
+
 
     @GetMapping("/getAllSubByMain/{id}")
     public ApiResponse<List<SubCategory>> getAllSubByMain(@PathVariable String id){

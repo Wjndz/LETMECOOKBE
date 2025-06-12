@@ -16,10 +16,11 @@ import com.example.letmecookbe.repository.SubCategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class RecipeService {
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
-
+    private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
         var context = SecurityContextHolder.getContext();
@@ -41,8 +42,7 @@ public class RecipeService {
         return account.getId();
     }
 
-    @PreAuthorize("hasAuthority('CREATE_RECIPE')")
-    public RecipeResponse createRecipe(String subCategoryId,RecipeCreationRequest request){
+    public RecipeResponse createRecipe(String subCategoryId, RecipeCreationRequest request, MultipartFile file){
         SubCategory subCategory = subCategoryRepository.findById(subCategoryId).orElseThrow(
                 () -> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
         );
@@ -50,6 +50,8 @@ public class RecipeService {
                 ()->new RuntimeException("Account not found")
         );
         Recipe recipe = recipeMapper.toRecipe(request);
+        String recipeImg = fileStorageService.uploadFile(file);
+        recipe.setImg(recipeImg);
         recipe.setSubCategory(subCategory);
         recipe.setAccount(account);
         recipe.setStatus(String.valueOf(RecipeStatus.NOT_APPROVED));
@@ -57,8 +59,7 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_RECIPE')")
-    public RecipeResponse updateRecipe(String id, RecipeUpdateRequest updateRequest){
+    public RecipeResponse updateRecipe(String id, RecipeUpdateRequest updateRequest, MultipartFile file){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
@@ -76,6 +77,11 @@ public class RecipeService {
         if(!updateRequest.getCookingTime().isBlank())
             recipe.setCookingTime(updateRequest.getCookingTime());
 
+        if( file!= null && !file.isEmpty() ){
+            String recipeImg = fileStorageService.uploadFile(file);
+            recipe.setImg(recipeImg);
+        }
+
         if(!updateRequest.getSubCategoryId().isBlank()){
             SubCategory sub = subCategoryRepository.findById(updateRequest.getSubCategoryId()).orElseThrow(
                     ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
@@ -88,7 +94,7 @@ public class RecipeService {
     }
 
 
-    @PreAuthorize("hasAuthority('GET_ALL_RECIPE')")
+
     public List<RecipeResponse> getAllRecipe() {
         List<Recipe> recipes = RecipeRepository.findAll();
         if (recipes.isEmpty()) {
@@ -99,7 +105,6 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RecipeResponse> getRecipeByAccountId(){
         List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(getAccountIdFromContext());
         if (accountRecipes.isEmpty()) {
@@ -110,7 +115,6 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasAuthority('GET_RECIPE_BY_SUB_CATEGORY')")
     public List<RecipeResponse> getRecipeBySubCategoryId(String id){
         if(!subCategoryRepository.existsById(id)){
             throw new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST);
@@ -130,7 +134,6 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasRole('DELETE_RECIPE')")
     public String deleteRecipe(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
@@ -142,7 +145,6 @@ public class RecipeService {
         return "delete recipe success: "+ id;
     }
 
-    @PreAuthorize("hasAuthority('LIKE')")
     public RecipeResponse Like(String id) {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
@@ -161,7 +163,6 @@ public class RecipeService {
 //        return recipeMapper.toRecipeResponse(updatedRecipe);
 //    }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public RecipeResponse changeStatusToApprove(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
@@ -171,6 +172,23 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
 
+    public List<RecipeResponse> getTop5RecipesByTotalLikes(){
+        List<Recipe> recipeList = RecipeRepository.findTop5RecipesByTotalLikes();
+        return recipeList.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
 
+    public List<RecipeResponse> GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId){
+        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId);
+        return recipeList.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
+
+    public int countRecipeBySubCategoryId(){
+        int count= RecipeRepository.countRecipesByAccountId(getAccountIdFromContext());
+        return count;
+    }
 
 }
