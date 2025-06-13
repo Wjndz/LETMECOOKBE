@@ -5,8 +5,8 @@ import com.example.letmecookbe.dto.response.CommentResponse;
 import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.Comment;
 import com.example.letmecookbe.entity.Recipe;
-import com.example.letmecookbe.exception.AppException; // Import AppException của bạn
-import com.example.letmecookbe.exception.ErrorCode;  // Import ErrorCode của bạn
+import com.example.letmecookbe.exception.AppException;
+import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.CommentMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.CommentRepository;
@@ -15,12 +15,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable; // Đã thêm import này
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,17 +37,17 @@ public class CommentService {
     @PreAuthorize("hasAuthority('CREATE_COMMENT')")
     public CommentResponse createComment(String recipeId, CommentRequest request) {
         var context = SecurityContextHolder.getContext();
-        String userEmail = context.getAuthentication().getName(); // Lấy EMAIL từ JWT subject
+        String userEmail = context.getAuthentication().getName();
 
-        // Tìm tài khoản bằng EMAIL
         Account account = accountRepository.findAccountByEmail(userEmail)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)); // Lỗi này sẽ hiếm xảy ra nếu JWT hợp lệ
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
 
         Comment comment = commentMapper.toComment(request);
         comment.setAccount(account);
+        comment.setRecipe(recipe); // Đã thêm dòng này để liên kết comment với recipe
         comment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }
@@ -55,18 +56,18 @@ public class CommentService {
     @PreAuthorize("hasAuthority('UPDATE_COMMENT')")
     public CommentResponse updateComment(String commentId, CommentRequest request) {
         var context = SecurityContextHolder.getContext();
-        String currentEmail = context.getAuthentication().getName(); // Đây là email của user hiện tại từ JWT
+        String currentEmail = context.getAuthentication().getName();
 
-        // Bước 1: Tìm account của người dùng hiện tại bằng email để lấy ID của họ
         Account currentUserAccount = accountRepository.findAccountByEmail(currentEmail)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)); // Xử lý nếu không tìm thấy user (hiếm khi xảy ra nếu JWT hợp lệ)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
 
-        // Bước 2: So sánh ID của người dùng hiện tại với ID của người tạo comment
-        // Bây giờ chúng ta đang so sánh Integer với Integer (comment.getAccount().getId() vs currentUserAccount.getId())
-    
+        // Kiểm tra quyền: Chỉ người tạo comment mới được phép chỉnh sửa
+        if (!comment.getAccount().getId().equals(currentUserAccount.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED); // Sử dụng ErrorCode.UNAUTHORIZED
+        }
 
         comment.setCommentText(request.getCommentText());
         comment = commentRepository.save(comment);
@@ -77,22 +78,28 @@ public class CommentService {
     @PreAuthorize("hasAuthority('DELETE_COMMENT')")
     public void deleteComment(String commentId) {
         var context = SecurityContextHolder.getContext();
-        String currentUserId = context.getAuthentication().getName();
+        String currentEmail = context.getAuthentication().getName();
+        Account currentUserAccount = accountRepository.findAccountByEmail(currentEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST)); // Sử dụng AppException
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
+
+        // Kiểm tra quyền: Chỉ người tạo comment mới được phép xóa (hoặc thêm kiểm tra vai trò ADMIN ở đây)
+        if (!comment.getAccount().getId().equals(currentUserAccount.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED); // Sử dụng ErrorCode.UNAUTHORIZED
+        }
+
         commentRepository.delete(comment);
     }
 
-    // --- 4. Xem Comment của Bài đăng ---
+    // --- 4. Xem Comment của Bài đăng (có phân trang) ---
     @PreAuthorize("hasAuthority('GET_COMMENTS_BY_RECIPE')")
-    public Page<CommentResponse> getCommentsByRecipe(String recipeId, Pageable pageable) { // Đã sửa đổi chữ ký
+    public Page<CommentResponse> getCommentsByRecipe(String recipeId, Pageable pageable) {
         if (!recipeRepository.existsById(recipeId)) {
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
         }
-        // Gọi phương thức findByRecipe_Id từ CommentRepository với Pageable
         Page<Comment> commentsPage = commentRepository.findByRecipe_Id(recipeId, pageable);
-
-        // Sử dụng map để chuyển đổi Page<Comment> sang Page<CommentResponse>
         return commentsPage.map(commentMapper::toCommentResponse);
     }
 
@@ -101,9 +108,17 @@ public class CommentService {
     @PreAuthorize("hasAuthority('GET_COMMENT_BY_ID')")
     public CommentResponse getCommentById(String commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST)); // Sử dụng AppException
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
         return commentMapper.toCommentResponse(comment);
     }
 
- 
+    // --- 6. Xem tất cả Comment (có phân trang) ---
+    @PreAuthorize("hasAuthority('GET_ALL_COMMENTS')")
+    public Page<CommentResponse> getAllComments(Pageable pageable) { // Thay đổi kiểu trả về và thêm tham số Pageable
+        Page<Comment> commentsPage = commentRepository.findAll(pageable); // Sử dụng findAll với Pageable
+        if (commentsPage.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return commentsPage.map(commentMapper::toCommentResponse);
+    }
 }

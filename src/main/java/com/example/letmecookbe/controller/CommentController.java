@@ -1,9 +1,10 @@
 package com.example.letmecookbe.controller;
 
 import com.example.letmecookbe.dto.request.CommentRequest;
+import com.example.letmecookbe.dto.response.ApiResponse; // Đảm bảo đã import
 import com.example.letmecookbe.dto.response.CommentResponse;
 import com.example.letmecookbe.service.CommentService;
-import jakarta.validation.Valid; // Để sử dụng @Valid cho validation của request body
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -13,57 +14,75 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-@RestController // Đánh dấu lớp này là một REST Controller
-@RequestMapping("/{recipeId}/comments") // Định nghĩa base URL cho comment của một recipe cụ thể
+import org.springframework.data.domain.Sort;
+import java.util.List; // Vẫn giữ import nếu bạn có các phương thức khác trả về List
+
+@RestController
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CommentController {
-    CommentService commentService; // Inject CommentService
+    CommentService commentService;
+
     // --- 1. Xem tất cả Comment của một Bài đăng (GET) ---
-    // Endpoint: GET /api/recipes/{recipeId}/comments
-    @GetMapping
+    @GetMapping("/recipe/{recipeId}") // Đường dẫn mới để lấy comment theo recipe
     public ResponseEntity<Page<CommentResponse>> getCommentsByRecipe(
             @PathVariable String recipeId,
-            @PageableDefault(size = 5, page = 0) Pageable pageable) { // Thay đổi size từ 3 thành 5
+            @PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<CommentResponse> comments = commentService.getCommentsByRecipe(recipeId, pageable);
         return ResponseEntity.ok(comments);
     }
+
     // --- 2. Tạo Comment (POST) ---
-    // Endpoint: POST /api/recipes/{recipeId}/comments
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED) // Trả về 201 Created khi tạo thành công
-    public ResponseEntity<CommentResponse> createComment(
+    @PostMapping("/{recipeId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(
             @PathVariable String recipeId,
-            @RequestBody @Valid CommentRequest request) { // <--- ĐẶT BREAKPOINT Ở ĐÂY
+            @RequestBody @Valid CommentRequest request) {
         CommentResponse createdComment = commentService.createComment(recipeId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+        ApiResponse<CommentResponse> response = new ApiResponse<>();
+        response.setMessage("Comment created successfully");
+        response.setResult(createdComment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
     // --- 3. Chỉnh sửa Comment (PUT) ---
-    // Endpoint: PUT /api/recipes/{recipeId}/comments/{commentId}
     @PutMapping("/{commentId}")
-    public ResponseEntity<CommentResponse> updateComment(
-            @PathVariable String recipeId, // recipeId có thể được dùng để kiểm tra bối cảnh nếu cần
+    public ResponseEntity<ApiResponse<CommentResponse>> updateComment(
             @PathVariable String commentId,
             @RequestBody @Valid CommentRequest request) {
         CommentResponse updatedComment = commentService.updateComment(commentId, request);
-        return ResponseEntity.ok(updatedComment); // Trả về status 200 OK
+        ApiResponse<CommentResponse> response = new ApiResponse<>();
+        response.setMessage("Comment updated successfully");
+        response.setResult(updatedComment);
+        return ResponseEntity.ok(response);
     }
+
     // --- 4. Xóa Comment (DELETE) ---
-    // Endpoint: DELETE /api/recipes/{recipeId}/comments/{commentId}
     @DeleteMapping("/{commentId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT) // Trả về 204 No Content khi xóa thành công
-    public ResponseEntity<Void> deleteComment(
-            @PathVariable String recipeId, // recipeId có thể được dùng để kiểm tra bối cảnh nếu cần
-            @PathVariable String commentId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> deleteComment(@PathVariable String commentId) {
         commentService.deleteComment(commentId);
-        return ResponseEntity.noContent().build(); // Build response 204
+        return ResponseEntity.noContent().build();
     }
+
     // --- 5. Xem một Comment cụ thể theo ID (GET) ---
-    // Endpoint: GET /api/recipes/{recipeId}/comments/{commentId}
     @GetMapping("/{commentId}")
-    public ResponseEntity<CommentResponse> getCommentById(@PathVariable String recipeId, @PathVariable String commentId) {
+    public ResponseEntity<ApiResponse<CommentResponse>> getCommentById(@PathVariable String commentId) {
         CommentResponse comment = commentService.getCommentById(commentId);
-        return ResponseEntity.ok(comment); // Trả về status 200 OK
+        ApiResponse<CommentResponse> response = new ApiResponse<>();
+        response.setMessage("Get comment by ID");
+        response.setResult(comment);
+        return ResponseEntity.ok(response);
+    }
+
+    // --- MỚI THÊM: 6. Xem tất cả Comment trong hệ thống (có phân trang) ---
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<Page<CommentResponse>>> getAllComments(
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        ApiResponse<Page<CommentResponse>> response = new ApiResponse<>();
+        response.setMessage("Get all comments with pagination");
+        response.setResult(commentService.getAllComments(pageable));
+        return ResponseEntity.ok(response);
     }
 }

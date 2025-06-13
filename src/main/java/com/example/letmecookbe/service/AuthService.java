@@ -119,7 +119,13 @@ public class AuthService {
                 .authenticated(true)
                 .build();
     }
-
+    public Account getCurrentAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // ... logic lấy identifier từ authentication ...
+        String email = authentication.getName(); // Ví dụ đơn giản, có thể phức tạp hơn với JWT
+        return accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
     public AuthResponse googleSignIn(GoogleSignInRequest request) throws Exception {
         // Xác minh ID Token từ Google
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
@@ -299,12 +305,5 @@ public class AuthService {
         return stringJoiner.toString();
     }
 
-    public Account getCurrentAccount() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // ... logic lấy identifier từ authentication ...
-        String email = authentication.getName(); // Ví dụ đơn giản, có thể phức tạp hơn với JWT
-        return accountRepository.findAccountByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-    }
 
 }
