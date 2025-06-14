@@ -25,7 +25,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
             "WHERE c.subCategory.id = :subCategoryId AND c.status ='APPRROVED' " +
             "AND DATE(c.createAt) = CURRENT_DATE " +
             "ORDER BY c.totalLikes DESC")
-    List<Recipe> findRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId);
+    List<Recipe> findRecipesBySubCategoryIdTodayOrderByLikes(String subCategoryId);
 
     @Query("SELECT COUNT(c) FROM Recipe c WHERE c.account.id = :accountId")
     int countRecipesByAccountId(String accountId);

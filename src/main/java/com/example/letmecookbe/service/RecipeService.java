@@ -16,6 +16,8 @@ import com.example.letmecookbe.repository.SubCategoryRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -97,14 +99,12 @@ public class RecipeService {
 
 
     @PreAuthorize("hasAuthority('GET_ALL_RECIPE')")
-    public List<RecipeResponse> getAllRecipe() {
-        List<Recipe> recipes = RecipeRepository.findAll();
-        if (recipes.isEmpty()) {
+    public Page<RecipeResponse> getAllRecipe(Pageable pageable) {
+        Page<Recipe> recipePage = RecipeRepository.findAll(pageable);
+        if (recipePage.isEmpty()) {
             throw new AppException(ErrorCode.LIST_EMPTY);
         }
-        return recipes.stream()
-                .map(recipeMapper::toRecipeResponse)
-                .collect(Collectors.toList());
+        return recipePage.map(recipeMapper::toRecipeResponse);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -180,6 +180,7 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
 
+    @PreAuthorize("hasAnyAuthority('TOP_5_RECIPE')")
     public List<RecipeResponse> getTop5RecipesByTotalLikes(){
         List<Recipe> recipeList = RecipeRepository.findTop5RecipesByTotalLikes();
         return recipeList.stream()
@@ -187,8 +188,9 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    public List<RecipeResponse> GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId){
-        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId);
+    @PreAuthorize("hasAnyAuthority(('GET_RECIPE_BY_SUB_TODAY'))")
+    public List<RecipeResponse> GetRecipesBySubCategoryIdTodayOrderByLikes(String subCategoryId){
+        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdTodayOrderByLikes(subCategoryId);
         return recipeList.stream()
                 .map(recipeMapper::toRecipeResponse)
                 .collect(Collectors.toList());
@@ -199,6 +201,7 @@ public class RecipeService {
         return count;
     }
 
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
     public int countRecipeByUserId(String accountId) {
         if (!accountRepository.existsById(accountId)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
