@@ -13,6 +13,7 @@ import com.example.letmecookbe.repository.RecipeStepsRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,7 @@ public class RecipeStepsService {
     RecipeRepository recipeRepository;
     private final FileStorageService fileStorageService;
 
+    @PreAuthorize("hasAuthority('CREATE_RECIPE_STEPS')")
     public RecipeStepsResponse createRecipeSteps(String id, RecipeStepsCreationRequest request, MultipartFile file) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
@@ -48,6 +50,7 @@ public class RecipeStepsService {
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
+    @PreAuthorize("hasAuthority('UPDATE_RECIPE_STEPS')")
     public RecipeStepsResponse updateRecipeSteps(String RecipeId,int stepNum, RecipeStepsUpdateRequest request, MultipartFile file){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
@@ -74,6 +77,7 @@ public class RecipeStepsService {
         return recipeStepsMapper.toRecipeStepsResponse(savedRecipeSteps);
     }
 
+    @PreAuthorize("hasAuthority('GET_RECIPE_STEPS_BY_RECIPE_ID')")
     public List<RecipeStepsResponse> getRecipeStepsByRecipeId(String RecipeId){
         if(!recipeRepository.existsById(RecipeId)){
             throw new AppException(ErrorCode.RECIPE_NOT_FOUND);
@@ -84,6 +88,7 @@ public class RecipeStepsService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasAuthority('DELETE_RECIPE_STEPS_BY_RECIPE_ID')")
     public String deleteRecipeSteps(String RecipeStepsId){
         if(!recipeStepsRepository.existsById(RecipeStepsId)){
             throw new AppException(ErrorCode.RECIPE_STEPS_NOT_EXISTED);

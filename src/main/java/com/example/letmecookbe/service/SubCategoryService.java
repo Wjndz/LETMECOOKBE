@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,7 @@ public class SubCategoryService {
     SubCategoryMapper subCategoryMapper;
     private final FileStorageService fileStorageService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public SubCategoryResponse createSubCategory(String id,SubCategoryCreationRequest request, MultipartFile image )  {
         MainCategory main = MainRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST)
@@ -43,6 +45,7 @@ public class SubCategoryService {
         return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public SubCategoryResponse updateSubCategoryName(String id, SubCategoryUpdateRequest request, MultipartFile image )  {
         SubCategory sub = SubRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
@@ -65,6 +68,7 @@ public class SubCategoryService {
         return subCategoryMapper.toSubCategoryResponse(savedSub);
     }
 
+    @PreAuthorize("hasAuthority('GET_SUB_CATEGORY_BY_MAIN_CATEGORY')")
     public List<SubCategory> getSubCategoryByManCategoryId(String id){
         if(!MainRepository.existsById(id)){
             throw new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST);
@@ -72,6 +76,7 @@ public class SubCategoryService {
         return SubRepository.findAllByMainCategoryId(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public String deleteSubCategory(String id){
         SubCategory sub = SubRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)

@@ -142,4 +142,12 @@ public class RecipeController {
         response.setResult(recipeService.countRecipeBySubCategoryId());
         return response;
     }
+
+    @GetMapping("/count/{accountId}")
+    public ApiResponse<Integer> getRecipeCountByUser(@PathVariable String accountId) {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Recipe Count for User: " + accountId);
+        response.setResult(recipeService.countRecipeByUserId(accountId));
+        return response;
+    }
 }
