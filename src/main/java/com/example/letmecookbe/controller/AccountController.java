@@ -59,18 +59,13 @@ public class AccountController {
                 return ApiResponse.<String>builder()
                         .message("Tài khoản với id [" + accountId + "] đã bị ban " + days + " ngày")
                         .build();
-            case "ban-permanent":
-                accountService.banAccountPermanently(accountId);
-                return ApiResponse.<String>builder()
-                        .message("Tài khoản với id [" + accountId + "] đã bị ban vĩnh viễn")
-                        .build();
             case "activate":
                 accountService.activateAccount(accountId);
                 return ApiResponse.<String>builder()
                         .message("Tài khoản với id [" + accountId + "] đã được kích hoạt lại")
                         .build();
             default:
-                throw new IllegalArgumentException("Invalid action. Supported actions: ban, ban-permanent, activate");
+                throw new IllegalArgumentException("Invalid action. Supported actions: ban, activate");
         }
     }
 
@@ -91,7 +86,7 @@ public class AccountController {
     }
 
     @GetMapping
-    public ApiResponse<Page<AccountResponse>> getAllAccounts(@PageableDefault(size = 3, page = 0) Pageable pageable) {
+    public ApiResponse<Page<AccountResponse>> getAllAccounts(@PageableDefault(size = 3 , page = 0) Pageable pageable) {
         Page<AccountResponse> result = accountService.getAllAccounts(pageable);
         return ApiResponse.<Page<AccountResponse>>builder()
                 .result(result)

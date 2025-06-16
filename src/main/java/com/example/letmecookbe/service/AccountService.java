@@ -85,7 +85,7 @@ public class AccountService {
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
-        account.setStatus(days == -1 ? AccountStatus.BANNED_PERMANENT : AccountStatus.BANNED);
+        account.setStatus(AccountStatus.BANNED);
 
         if (days > 0) {
             account.setBanEndDate(LocalDateTime.now().plusDays(days));
@@ -94,16 +94,6 @@ public class AccountService {
         }
         accountRepository.save(account);
         log.debug("Banned account [{}] with id [{}] for [{}] days", account.getUsername(), account.getId(), days);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public void banAccountPermanently(String accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
-        account.setStatus(AccountStatus.BANNED_PERMANENT);
-        account.setBanEndDate(null); // Không cần ban_end_date khi ban vĩnh viễn
-        accountRepository.save(account);
-        log.debug("Permanently banned account [{}] with id [{}]", account.getUsername(), account.getId());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -122,7 +112,7 @@ public class AccountService {
         if (account.getStatus() == AccountStatus.ACTIVE) {
             return true;
         }
-        if (account.getStatus() != AccountStatus.BANNED_PERMANENT &&
+        if (account.getStatus() == AccountStatus.BANNED &&
                 account.getBanEndDate() != null &&
                 account.getBanEndDate().isBefore(LocalDateTime.now())) {
             account.setStatus(AccountStatus.ACTIVE);

@@ -87,20 +87,20 @@ public class AuthService {
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
-                account.setStatus(AccountStatus.ACTIVE);
-                account.setBanEndDate(null);
-                accountRepository.save(account);
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null) {
+                if (account.getBanEndDate().isBefore(LocalDateTime.now())) {
+                    account.setStatus(AccountStatus.ACTIVE);
+                    account.setBanEndDate(null);
+                    accountRepository.save(account);
+                } else {
+                    long daysRemaining = ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
+                    throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                }
             } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
-                throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
         }
 
@@ -151,20 +151,17 @@ public class AuthService {
                 });
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null && account.getBanEndDate().isBefore(LocalDateTime.now())) {
                 account.setStatus(AccountStatus.ACTIVE);
                 account.setBanEndDate(null);
                 accountRepository.save(account);
-            } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+            } else if (account.getBanEndDate() != null) {
                 throw new AppException(ErrorCode.ACCOUNT_BANNED);
+            } else {
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
         }
 
@@ -202,20 +199,17 @@ public class AuthService {
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null && account.getBanEndDate().isBefore(LocalDateTime.now())) {
                 account.setStatus(AccountStatus.ACTIVE);
                 account.setBanEndDate(null);
                 accountRepository.save(account);
-            } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+            } else if (account.getBanEndDate() != null) {
                 throw new AppException(ErrorCode.ACCOUNT_BANNED);
+            } else {
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
         }
 
