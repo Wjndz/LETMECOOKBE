@@ -13,6 +13,7 @@ import com.example.letmecookbe.mapper.RecipeMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
 import com.example.letmecookbe.repository.SubCategoryRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,6 +35,7 @@ public class RecipeService {
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
+    RecipeDeletionService recipeDeletionService;
     private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
@@ -140,15 +142,21 @@ public class RecipeService {
     }
 
     @PreAuthorize("hasRole('DELETE_RECIPE')")
+    @Transactional
     public String deleteRecipe(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
-        RecipeRepository.delete(recipe);
-        if(RecipeRepository.existsById(id)){
-            return "delete recipe failed: "+ id;
+        try {
+            // Truyền 1 recipe vào list
+            recipeDeletionService.deleteRecipesAndRelatedData(List.of(recipe));
+
+            return "Xóa Recipe và tất cả dữ liệu liên quan thành công" ;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa Recipe: " + e.getMessage(), e);
         }
-        return "delete recipe success: "+ id;
+
     }
 
     @PreAuthorize("hasAuthority('LIKE')")
@@ -156,6 +164,7 @@ public class RecipeService {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
+
         recipe.setTotalLikes(recipe.getTotalLikes() + 1);
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);

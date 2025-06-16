@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter // <-- Rất quan trọng!
-@Setter // <-- Rất quan trọng!
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Recipe {
     @Id
