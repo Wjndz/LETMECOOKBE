@@ -10,7 +10,7 @@ import com.example.letmecookbe.entity.Comment;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.ReportMapper;
-import com.example.letmecookbe.repository.AccountRepository; // Có thể bỏ nếu chỉ dùng qua AuthService
+import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.ReportRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
 import com.example.letmecookbe.repository.CommentRepository;
@@ -18,15 +18,12 @@ import com.example.letmecookbe.enums.ReportStatus;
 import com.example.letmecookbe.enums.ReportType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-// Các import Spring Security không còn cần thiết nếu đã chuyển logic sang AuthService
-// import org.springframework.security.core.context.SecurityContextHolder;
-// import org.springframework.security.core.Authentication;
-// import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page; // Đảm bảo import này
+import org.springframework.data.domain.Pageable; // Đảm bảo import này
+// import java.util.List; // Có thể bỏ nếu không còn phương thức nào trả về List
 
 @Service
 @RequiredArgsConstructor
@@ -34,22 +31,19 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private final ReportRepository reportRepository;
-    private final AccountRepository accountRepository; // Giữ lại nếu có các logic khác cần tìm kiếm Account trực tiếp, không liên quan đến user hiện tại
+    private final AccountRepository accountRepository;
     private final RecipeRepository recipeRepository;
     private final CommentRepository commentRepository;
     private final ReportMapper reportMapper;
-    private final AuthService authService; // Đảm bảo AuthService đã được inject và có phương thức getCurrentAccount()
-
+    private final AuthService authService;
 
     /**
      * Tạo một báo cáo mới.
      */
     @Transactional
     public ReportResponse createReport(ReportRequest request) {
-        // Lấy thông tin người dùng hiện tại từ AuthService
-        Account currentUser = authService.getCurrentAccount(); // SỬ DỤNG AUTHSERVICE
+        Account currentUser = authService.getCurrentAccount();
 
-        // Kiểm tra sự tồn tại của đối tượng bị báo cáo (Recipe hoặc Comment) và ngăn chặn tự báo cáo
         if (request.getReportType() == ReportType.REPORT_RECIPE) {
             Recipe recipe = recipeRepository.findById(request.getReportedItemId())
                     .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
@@ -59,7 +53,7 @@ public class ReportService {
             }
         } else if (request.getReportType() == ReportType.REPORT_COMMENT) {
             Comment comment = commentRepository.findById(request.getReportedItemId())
-                    .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST)); // Đã sửa ErrorCode
+                    .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
 
             if (comment.getAccount().getId().equals(currentUser.getId())) {
                 throw new AppException(ErrorCode.CANNOT_REPORT_OWN_CONTENT);
@@ -71,32 +65,32 @@ public class ReportService {
         Report report = reportMapper.toEntity(request);
         report.setReporterAccount(currentUser);
         report.setStatus(ReportStatus.PENDING);
+        // report.setCreatedAt(LocalDateTime.now()); // Đảm bảo trường này được set nếu không dùng @CreationTimestamp
 
         Report savedReport = reportRepository.save(report);
-        log.info("Report created successfully for item ID: {} by user: {}", request.getReportedItemId(), currentUser.getEmail()); // Sử dụng email từ Account object
+        log.info("Report created successfully for item ID: {} by user: {}", request.getReportedItemId(), currentUser.getEmail());
 
         return reportMapper.toDto(savedReport);
     }
 
     /**
-     * Lấy tất cả báo cáo, có thể lọc theo trạng thái.
+     * Lấy tất cả báo cáo, có thể lọc theo trạng thái và hỗ trợ phân trang.
      */
-    public List<ReportResponse> getAllReports(String status) {
-        List<Report> reports;
+    // Đã thay đổi chữ ký phương thức và kiểu trả về
+    public Page<ReportResponse> getAllReports(String status, Pageable pageable) {
+        Page<Report> reportsPage;
         if (status != null && !status.isEmpty()) {
             try {
                 ReportStatus reportStatus = ReportStatus.valueOf(status.toUpperCase());
-                reports = reportRepository.findByStatus(reportStatus);
+                reportsPage = reportRepository.findByStatus(reportStatus, pageable); // Truyền Pageable vào repository
             } catch (IllegalArgumentException e) {
                 throw new AppException(ErrorCode.INVALID_KEY);
             }
         } else {
-            reports = reportRepository.findAll();
+            reportsPage = reportRepository.findAll(pageable); // Truyền Pageable vào repository
         }
 
-        return reports.stream()
-                .map(reportMapper::toDto)
-                .collect(Collectors.toList());
+        return reportsPage.map(reportMapper::toDto); // Chuyển đổi Page<Entity> sang Page<DTO>
     }
 
     /**
@@ -113,8 +107,7 @@ public class ReportService {
      */
     @Transactional
     public ReportResponse updateReportStatus(String reportId, ReportStatusUpdateRequest request) {
-        // Lấy thông tin admin hiện tại từ AuthService
-        Account currentAdminAccount = authService.getCurrentAccount(); // SỬ DỤNG AUTHSERVICE
+        Account currentAdminAccount = authService.getCurrentAccount();
 
         Report existingReport = reportRepository.findById(reportId)
                 .orElseThrow(() -> new AppException(ErrorCode.REPORT_NOT_FOUND));
@@ -134,14 +127,11 @@ public class ReportService {
      */
     @Transactional
     public void deleteReport(String reportId) {
-        // Lấy thông tin admin hiện tại từ AuthService (nếu cần cho log)
-        // String currentAdminIdentifier = authService.getCurrentUserIdentifier(); // Có thể dùng nếu chỉ cần identifier dạng String
-
         if (!reportRepository.existsById(reportId)) {
             throw new AppException(ErrorCode.REPORT_NOT_FOUND);
         }
 
         reportRepository.deleteById(reportId);
-        log.info("Report ID {} deleted by admin {}", reportId, authService.getCurrentAccount().getEmail()); // SỬ DỤNG AUTHSERVICE
+        log.info("Report ID {} deleted by admin {}", reportId, authService.getCurrentAccount().getEmail());
     }
 }
