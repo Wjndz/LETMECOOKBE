@@ -212,4 +212,32 @@ public class RecipeService {
         }
         return count;
     }
+
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_SUB_CATEGORY')")
+    public int countRecipeBySubCategoryId(String subCategoryId){
+        int count= RecipeRepository.countRecipesBySubCategoryId(subCategoryId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+    @PreAuthorize("hasAnyAuthority('COUNT_APPROVED_REICPE')")
+    public int countApprovedRecipes(){
+        int count= RecipeRepository.countApprovedRecipes();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_MAIN_CATEGORY')")
+    public int countRecipesByMainCategory(String mainCategoryId){
+        int count= RecipeRepository.countRecipesByMainCategoryId(mainCategoryId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
 }

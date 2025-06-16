@@ -42,4 +42,11 @@ public class MainCategoryController {
         response.setResult(service.getAllMainCategory());
         return response;
     }
+
+    @DeleteMapping("/deleteMainCategory/{id}")
+    public ApiResponse<String> deleteMainCategory(@PathVariable String id){
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setResult(service.deleteMainCategory(id));
+        return response;
+    }
 }

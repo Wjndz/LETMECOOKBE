@@ -156,4 +156,28 @@ public class RecipeController {
         response.setResult(recipeService.countRecipeByUserId(accountId));
         return response;
     }
+
+    @GetMapping("/countRecipeBySub/{subCategoryId}")
+    public ApiResponse<Integer> getRecipeCountBySubCategory(@PathVariable String subCategoryId) {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Recipe Count for SubCategory: " + subCategoryId);
+        response.setResult(recipeService.countRecipeBySubCategoryId(subCategoryId));
+        return response;
+    }
+
+    @GetMapping("/countApprovedRecipes")
+    public ApiResponse<Integer> getApprovedRecipeCount() {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Approve Recipe Count");
+        response.setResult(recipeService.countApprovedRecipes());
+        return response;
+    }
+
+    @GetMapping("/countRecipeByMainCate/{mainCategory}")
+    public ApiResponse<Integer> getRecipesCountByMainCategory(@PathVariable String mainCategory) {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Recipe Count for MainCategory: " + mainCategory);
+        response.setResult(recipeService.countRecipesByMainCategory(mainCategory));
+        return response;
+    }
 }
