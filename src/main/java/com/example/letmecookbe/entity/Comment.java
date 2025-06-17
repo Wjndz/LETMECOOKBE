@@ -1,4 +1,5 @@
 package com.example.letmecookbe.entity;
+import com.example.letmecookbe.enums.CommentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,8 +25,12 @@ public class Comment {
     @JoinColumn(name = "recipe_id", referencedColumnName = "id") // RecipeID là khóa ngoại tới Recipe
     Recipe recipe;
     LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false) // Đảm bảo cột status không null
+    CommentStatus status;
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
 }

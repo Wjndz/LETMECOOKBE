@@ -47,7 +47,7 @@ public class CommentController {
     }
 
     // --- 3. Chỉnh sửa Comment (PUT) ---
-    @PutMapping("/{commentId}")
+    @PutMapping("/{recipeId}/{commentId}")
     public ResponseEntity<ApiResponse<CommentResponse>> updateComment(
             @PathVariable String commentId,
             @RequestBody @Valid CommentRequest request) {
@@ -79,10 +79,26 @@ public class CommentController {
     // --- MỚI THÊM: 6. Xem tất cả Comment trong hệ thống (có phân trang) ---
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<Page<CommentResponse>>> getAllComments(
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String searchTerm, // <--- Đã có
+            @RequestParam(required = false) String recipeId,   // <--- Đã có
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String date) {
+
         ApiResponse<Page<CommentResponse>> response = new ApiResponse<>();
-        response.setMessage("Get all comments with pagination");
-        response.setResult(commentService.getAllComments(pageable));
+        response.setMessage("Get all comments with pagination and filters");
+        response.setResult(commentService.getAllComments(pageable, searchTerm, recipeId, status, date));
         return ResponseEntity.ok(response);
     }
+    @PatchMapping("/{commentId}/status")// Chỉ Admin mới được thay đổi trạng thái
+    public ResponseEntity<ApiResponse<CommentResponse>> updateCommentStatus(
+            @PathVariable String commentId,
+            @RequestParam("status") String newStatus) { // Dùng @RequestParam hoặc @RequestBody nếu bạn muốn một object
+        CommentResponse updatedComment = commentService.updateCommentStatus(commentId, newStatus);
+        ApiResponse<CommentResponse> response = new ApiResponse<>();
+        response.setMessage("Comment status updated successfully");
+        response.setResult(updatedComment);
+        return ResponseEntity.ok(response);
+    }
+
 }

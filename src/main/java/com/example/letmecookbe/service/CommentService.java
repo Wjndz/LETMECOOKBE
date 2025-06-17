@@ -19,10 +19,14 @@ import org.springframework.data.domain.Pageable; // Đã thêm import này
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.example.letmecookbe.enums.CommentStatus;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.stream.Collectors;
-
+import java.util.ArrayList;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -47,7 +51,8 @@ public class CommentService {
 
         Comment comment = commentMapper.toComment(request);
         comment.setAccount(account);
-        comment.setRecipe(recipe); // Đã thêm dòng này để liên kết comment với recipe
+        comment.setRecipe(recipe);
+        comment.setStatus(CommentStatus.APPROVED); // Đặt giá trị status
         comment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }
@@ -66,7 +71,7 @@ public class CommentService {
 
         // Kiểm tra quyền: Chỉ người tạo comment mới được phép chỉnh sửa
         if (!comment.getAccount().getId().equals(currentUserAccount.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED); // Sử dụng ErrorCode.UNAUTHORIZED
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         comment.setCommentText(request.getCommentText());
@@ -75,23 +80,13 @@ public class CommentService {
     }
 
     // --- 3. Xóa Comment ---
-    @PreAuthorize("hasAuthority('DELETE_COMMENT')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteComment(String commentId) {
-        var context = SecurityContextHolder.getContext();
-        String currentEmail = context.getAuthentication().getName();
-        Account currentUserAccount = accountRepository.findAccountByEmail(currentEmail)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
-
-        // Kiểm tra quyền: Chỉ người tạo comment mới được phép xóa (hoặc thêm kiểm tra vai trò ADMIN ở đây)
-        if (!comment.getAccount().getId().equals(currentUserAccount.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED); // Sử dụng ErrorCode.UNAUTHORIZED
-        }
-
         commentRepository.delete(comment);
     }
+
 
     // --- 4. Xem Comment của Bài đăng (có phân trang) ---
     @PreAuthorize("hasAuthority('GET_COMMENTS_BY_RECIPE')")
@@ -113,12 +108,63 @@ public class CommentService {
     }
 
     // --- 6. Xem tất cả Comment (có phân trang) ---
-    @PreAuthorize("hasAuthority('GET_ALL_COMMENTS')")
-    public Page<CommentResponse> getAllComments(Pageable pageable) { // Thay đổi kiểu trả về và thêm tham số Pageable
-        Page<Comment> commentsPage = commentRepository.findAll(pageable); // Sử dụng findAll với Pageable
-        if (commentsPage.isEmpty()) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<CommentResponse> getAllComments(Pageable pageable,
+        String searchTerm,
+        String recipeId,
+        String status,
+        String date) {
+        Specification<Comment> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            // Filter by searchTerm (commentText or account username)
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                Predicate commentTextPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("commentText")), "%" + searchTerm.toLowerCase() + "%");
+                Predicate usernamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("account").get("username")), "%" + searchTerm.toLowerCase() + "%");
+                predicates.add(criteriaBuilder.or(commentTextPredicate, usernamePredicate));
+            }
+            // Filter by recipeId
+            if (recipeId != null && !recipeId.equals("all") && !recipeId.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.equal(root.get("recipe").get("id"), recipeId));
+            }
+            //Filter by status
+            if (status != null && !status.equals("all") && !status.trim().isEmpty()) {
+                try {
+                    // Chuyển đổi chuỗi status sang Enum CommentStatus
+                    CommentStatus commentStatus = CommentStatus.valueOf(status.toUpperCase());
+                    predicates.add(criteriaBuilder.equal(root.get("status"), commentStatus));
+                } catch (IllegalArgumentException e) {
+                    // Xử lý nếu chuỗi trạng thái không hợp lệ (ví dụ: người dùng gửi "abc" thay vì "APPROVED")
+                    // Ở đây, chúng ta chỉ in lỗi ra console và bỏ qua bộ lọc này.
+                    System.err.println("Invalid status parameter: " + status);
+                }
+            }
+            if (date != null && !date.trim().isEmpty()) {
+                try {
+                    LocalDate searchDate = LocalDate.parse(date); // Phân tích chuỗi ngày (ví dụ "2024-06-17") thành LocalDate
+                    predicates.add(criteriaBuilder.equal(criteriaBuilder.function("DATE", LocalDate.class, root.get("createdAt")), searchDate));
+                } catch (DateTimeParseException e) {
+                    // Xử lý nếu định dạng ngày không hợp lệ
+                    System.err.println("Invalid date format: " + date);
+                }
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+        Page<Comment> commentsPage = commentRepository.findAll(spec, pageable);
         return commentsPage.map(commentMapper::toCommentResponse);
+    }
+
+    //7. Cập nhật trạng thái Comment
+    @PreAuthorize("hasRole('ADMIN')")
+    public CommentResponse updateCommentStatus(String commentId, String newStatusString) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
+        try {
+            CommentStatus newStatus = CommentStatus.valueOf(newStatusString.toUpperCase());
+            comment.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new AppException(ErrorCode.INVALID_COMMENT_STATUS);
+        }
+        comment = commentRepository.save(comment);
+        return commentMapper.toCommentResponse(comment);
     }
 }

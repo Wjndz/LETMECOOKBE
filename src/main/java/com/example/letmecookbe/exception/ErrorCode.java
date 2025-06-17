@@ -84,6 +84,7 @@ public enum ErrorCode {
     CANNOT_REPORT_OWN_CONTENT(8883, "Cannot report own content", HttpStatus.BAD_REQUEST),
 
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
+    INVALID_COMMENT_STATUS(8889, "Invalid comment status", HttpStatus.BAD_REQUEST),
 
     ;
 

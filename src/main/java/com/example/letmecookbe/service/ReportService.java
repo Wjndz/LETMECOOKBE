@@ -18,6 +18,7 @@ import com.example.letmecookbe.enums.ReportStatus;
 import com.example.letmecookbe.enums.ReportType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ public class ReportService {
     /**
      * Tạo một báo cáo mới.
      */
-    @Transactional
+    @PreAuthorize("hasRole('USER')")
     public ReportResponse createReport(ReportRequest request) {
         Account currentUser = authService.getCurrentAccount();
 
@@ -77,6 +78,7 @@ public class ReportService {
      * Lấy tất cả báo cáo, có thể lọc theo trạng thái và hỗ trợ phân trang.
      */
     // Đã thay đổi chữ ký phương thức và kiểu trả về
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<ReportResponse> getAllReports(String status, Pageable pageable) {
         Page<Report> reportsPage;
         if (status != null && !status.isEmpty()) {
@@ -96,6 +98,7 @@ public class ReportService {
     /**
      * Lấy một báo cáo cụ thể theo ID.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public ReportResponse getReportById(String reportId) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new AppException(ErrorCode.REPORT_NOT_FOUND));
@@ -106,6 +109,7 @@ public class ReportService {
      * Cập nhật trạng thái và thêm phản hồi của Admin cho một báo cáo.
      */
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ReportResponse updateReportStatus(String reportId, ReportStatusUpdateRequest request) {
         Account currentAdminAccount = authService.getCurrentAccount();
 
@@ -126,6 +130,7 @@ public class ReportService {
      * Xóa một báo cáo. Chỉ Admin mới có thể xóa.
      */
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteReport(String reportId) {
         if (!reportRepository.existsById(reportId)) {
             throw new AppException(ErrorCode.REPORT_NOT_FOUND);
