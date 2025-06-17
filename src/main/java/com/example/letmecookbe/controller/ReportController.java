@@ -32,8 +32,7 @@ public class ReportController {
      * POST /reports
      * Body: ReportRequest (reportType, reportedItemId, reason)
      */
-    @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PostMapping// Chỉ người dùng đã đăng nhập mới có quyền gửi báo cáo
     public ResponseEntity<ApiResponse<ReportResponse>> createReport(@RequestBody @Valid ReportRequest request) {
         log.info("Received request to create a report: {}", request);
         ReportResponse response = reportService.createReport(request);
@@ -51,8 +50,7 @@ public class ReportController {
      * GET /reports?status={status}&page={page}&size={size}&sort={sort}
      * Params: status (PENDING, RESOLVED, REJECTED), page, size, sort
      */
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')") // Chỉ admin mới có quyền xem tất cả báo cáo
+    @GetMapping// Chỉ admin mới có quyền xem tất cả báo cáo
     public ResponseEntity<ApiResponse<Page<ReportResponse>>> getAllReports(
             @RequestParam(required = false) String status,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -74,7 +72,6 @@ public class ReportController {
      * GET /reports/{reportId}
      */
     @GetMapping("/{reportId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ReportResponse>> getReportById(@PathVariable String reportId) {
         log.info("Received request to get report by ID: {}", reportId);
         ReportResponse report = reportService.getReportById(reportId);
@@ -93,7 +90,6 @@ public class ReportController {
      * Body: ReportStatusUpdateRequest (newStatus, adminResponse)
      */
     @PutMapping("/{reportId}/status")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ReportResponse>> updateReportStatus(
             @PathVariable String reportId,
             @RequestBody @Valid ReportStatusUpdateRequest request) {
@@ -113,7 +109,6 @@ public class ReportController {
      * DELETE /reports/{reportId}
      */
     @DeleteMapping("/{reportId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteReport(@PathVariable String reportId) {
         log.info("Received request to delete report by ID: {}", reportId);
         reportService.deleteReport(reportId);
