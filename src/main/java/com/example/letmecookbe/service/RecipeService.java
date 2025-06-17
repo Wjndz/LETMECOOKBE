@@ -59,7 +59,7 @@ public class RecipeService {
         recipe.setImg(recipeImg);
         recipe.setSubCategory(subCategory);
         recipe.setAccount(account);
-        recipe.setStatus(String.valueOf(RecipeStatus.NOT_APPROVED));
+        recipe.setStatus(String.valueOf(RecipeStatus.PENDING));
         Recipe savedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
@@ -121,17 +121,22 @@ public class RecipeService {
     }
 
     @PreAuthorize("hasAuthority('GET_RECIPE_BY_SUB_CATEGORY')")
-    public List<RecipeResponse> getRecipeBySubCategoryId(String id){
+    public Page<RecipeResponse> getRecipeBySubCategoryId(String id, Pageable pageable){
         if(!subCategoryRepository.existsById(id)){
             throw new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST);
         }
-        List<Recipe> recipes = RecipeRepository.findRecipeBySubCategoryId(id);
 
-        return  recipes.stream()
-                .filter(recipe -> "APPROVED".equalsIgnoreCase(recipe.getStatus()))
-                .map(recipeMapper::toRecipeResponse)
-                .collect(Collectors.toList());
+        Page<Recipe> recipePage = RecipeRepository.findRecipeBySubCategoryIdWithPagination(id, pageable);
+
+        if (recipePage.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+
+        return recipePage
+                .map(recipe -> "APPROVED".equalsIgnoreCase(recipe.getStatus()) ? recipe : null)
+                .map(recipe -> recipe != null ? recipeMapper.toRecipeResponse(recipe) : null);
     }
+
 
 
     public List<RecipeResponse> findRecipeByKeyword(String keyword){

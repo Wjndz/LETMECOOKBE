@@ -43,6 +43,9 @@ public class IngredientService {
             }
             ingredients.setIngredientName(request.getIngredientName());
         }
+        if(!request.getMeasurementUnit().isBlank()){
+            ingredients.setMeasurementUnit(request.getMeasurementUnit());
+        }
 
         if(!request.getCaloriesPerUnit().isBlank())
             ingredients.setCaloriesPerUnit(request.getCaloriesPerUnit());

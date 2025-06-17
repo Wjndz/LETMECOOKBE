@@ -1,6 +1,8 @@
 package com.example.letmecookbe.repository;
 
 import com.example.letmecookbe.entity.Recipe;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -41,6 +43,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
 
     @Query("SELECT r FROM Recipe r WHERE r.subCategory.mainCategory.id = :mainCategoryId")
     List<Recipe> findAllByMainCategoryId(String mainCategoryId);
+
+    @Query("SELECT r FROM Recipe r WHERE r.subCategory.id = :subCategoryId AND r.status = 'APPROVED'")
+    Page<Recipe> findRecipeBySubCategoryIdWithPagination(String subCategoryId, Pageable pageable);
 
 
 }
