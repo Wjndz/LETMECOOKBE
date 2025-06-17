@@ -13,9 +13,12 @@ import com.example.letmecookbe.mapper.RecipeMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
 import com.example.letmecookbe.repository.SubCategoryRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class RecipeService {
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
+    RecipeDeletionService recipeDeletionService;
     private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
@@ -97,14 +101,12 @@ public class RecipeService {
 
 
     @PreAuthorize("hasAuthority('GET_ALL_RECIPE')")
-    public List<RecipeResponse> getAllRecipe() {
-        List<Recipe> recipes = RecipeRepository.findAll();
-        if (recipes.isEmpty()) {
+    public Page<RecipeResponse> getAllRecipe(Pageable pageable) {
+        Page<Recipe> recipePage = RecipeRepository.findAll(pageable);
+        if (recipePage.isEmpty()) {
             throw new AppException(ErrorCode.LIST_EMPTY);
         }
-        return recipes.stream()
-                .map(recipeMapper::toRecipeResponse)
-                .collect(Collectors.toList());
+        return recipePage.map(recipeMapper::toRecipeResponse);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -140,15 +142,21 @@ public class RecipeService {
     }
 
     @PreAuthorize("hasRole('DELETE_RECIPE')")
+    @Transactional
     public String deleteRecipe(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
-        RecipeRepository.delete(recipe);
-        if(RecipeRepository.existsById(id)){
-            return "delete recipe failed: "+ id;
+        try {
+            // Truyền 1 recipe vào list
+            recipeDeletionService.deleteRecipesAndRelatedData(List.of(recipe));
+
+            return "Xóa Recipe và tất cả dữ liệu liên quan thành công" ;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa Recipe: " + e.getMessage(), e);
         }
-        return "delete recipe success: "+ id;
+
     }
 
     @PreAuthorize("hasAuthority('LIKE')")
@@ -156,6 +164,7 @@ public class RecipeService {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
+
         recipe.setTotalLikes(recipe.getTotalLikes() + 1);
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);
@@ -180,6 +189,7 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
 
+    @PreAuthorize("hasAnyAuthority('TOP_5_RECIPE')")
     public List<RecipeResponse> getTop5RecipesByTotalLikes(){
         List<Recipe> recipeList = RecipeRepository.findTop5RecipesByTotalLikes();
         return recipeList.stream()
@@ -187,8 +197,9 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    public List<RecipeResponse> GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(String subCategoryId){
-        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId);
+    @PreAuthorize("hasAnyAuthority(('GET_RECIPE_BY_SUB_TODAY'))")
+    public List<RecipeResponse> GetRecipesBySubCategoryIdTodayOrderByLikes(String subCategoryId){
+        List<Recipe> recipeList = RecipeRepository.findRecipesBySubCategoryIdTodayOrderByLikes(subCategoryId);
         return recipeList.stream()
                 .map(recipeMapper::toRecipeResponse)
                 .collect(Collectors.toList());
@@ -199,11 +210,40 @@ public class RecipeService {
         return count;
     }
 
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
     public int countRecipeByUserId(String accountId) {
         if (!accountRepository.existsById(accountId)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
         int count = RecipeRepository.countRecipesByAccountId(accountId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_SUB_CATEGORY')")
+    public int countRecipeBySubCategoryId(String subCategoryId){
+        int count= RecipeRepository.countRecipesBySubCategoryId(subCategoryId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+    @PreAuthorize("hasAnyAuthority('COUNT_APPROVED_REICPE')")
+    public int countApprovedRecipes(){
+        int count= RecipeRepository.countApprovedRecipes();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_MAIN_CATEGORY')")
+    public int countRecipesByMainCategory(String mainCategoryId){
+        int count= RecipeRepository.countRecipesByMainCategoryId(mainCategoryId);
         if (count < 0) {
             throw new AppException(ErrorCode.LIST_EMPTY);
         }

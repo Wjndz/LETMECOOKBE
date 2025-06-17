@@ -3,13 +3,12 @@ package com.example.letmecookbe.service;
 import com.example.letmecookbe.dto.request.SubCategoryCreationRequest;
 import com.example.letmecookbe.dto.request.SubCategoryUpdateRequest;
 import com.example.letmecookbe.dto.response.SubCategoryResponse;
-import com.example.letmecookbe.entity.MainCategory;
-import com.example.letmecookbe.entity.SubCategory;
+import com.example.letmecookbe.entity.*;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.SubCategoryMapper;
-import com.example.letmecookbe.repository.MainCategoryRepository;
-import com.example.letmecookbe.repository.SubCategoryRepository;
+import com.example.letmecookbe.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +26,8 @@ public class SubCategoryService {
     MainCategoryRepository MainRepository;
     SubCategoryRepository SubRepository;
     SubCategoryMapper subCategoryMapper;
+    RecipeRepository recipeRepository;
+    RecipeDeletionService recipeDeletionService;
     private final FileStorageService fileStorageService;
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -77,17 +78,23 @@ public class SubCategoryService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public String deleteSubCategory(String id){
-        SubCategory sub = SubRepository.findById(id).orElseThrow(
-                ()-> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST)
-        );
-        if (sub.getSubCategoryName() != null) {
-            fileStorageService.deleteFile(sub.getSubCategoryImg());
+    @Transactional
+    public String deleteSubCategory(String id) {
+        SubCategory subCategory = SubRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST));
+
+        try {
+            List<Recipe> recipes = recipeRepository.findRecipeBySubCategoryId(id);
+
+            recipeDeletionService.deleteRecipesAndRelatedData(recipes);
+
+            SubRepository.deleteById(id);
+
+            return "Xóa SubCategory và tất cả dữ liệu liên quan thành công: " + subCategory.getSubCategoryName();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa SubCategory: " + e.getMessage(), e);
         }
-        SubRepository.delete(sub);
-        if(SubRepository.existsBySubCategoryName(sub.getSubCategoryName())){
-            return "delete sub category failed: "+ id;
-        }
-        return "delete sub category success: "+ id;
     }
+
 }

@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,10 +68,13 @@ public class RecipeController {
     }
 
     @GetMapping("/getAll")
-    public ApiResponse<List<RecipeResponse>> getAllRecipe(){
-        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
-        response.setMessage("Get all Recipe: ");
-        response.setResult(recipeService.getAllRecipe());
+    public ApiResponse<Page<RecipeResponse>> getAllRecipe(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        ApiResponse<Page<RecipeResponse>> response = new ApiResponse<>();
+        Pageable pageable = PageRequest.of(page, size);
+        response.setMessage("Get all Recipes with pagination");
+        response.setResult(recipeService.getAllRecipe(pageable));
         return response;
     }
 
@@ -131,7 +137,7 @@ public class RecipeController {
     public ApiResponse<List<RecipeResponse>> getRecipeBySubAndLike(@PathVariable String subCategoryId){
          ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
          response.setMessage("Recipe By SubCategory AND TotalLike");
-         response.setResult(recipeService.GetRecipesBySubCategoryIdCreatedTodayOrderByLikes(subCategoryId));
+         response.setResult(recipeService.GetRecipesBySubCategoryIdTodayOrderByLikes(subCategoryId));
          return response;
     }
 
@@ -148,6 +154,30 @@ public class RecipeController {
         ApiResponse<Integer> response = new ApiResponse<>();
         response.setMessage("Get Recipe Count for User: " + accountId);
         response.setResult(recipeService.countRecipeByUserId(accountId));
+        return response;
+    }
+
+    @GetMapping("/countRecipeBySub/{subCategoryId}")
+    public ApiResponse<Integer> getRecipeCountBySubCategory(@PathVariable String subCategoryId) {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Recipe Count for SubCategory: " + subCategoryId);
+        response.setResult(recipeService.countRecipeBySubCategoryId(subCategoryId));
+        return response;
+    }
+
+    @GetMapping("/countApprovedRecipes")
+    public ApiResponse<Integer> getApprovedRecipeCount() {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Approve Recipe Count");
+        response.setResult(recipeService.countApprovedRecipes());
+        return response;
+    }
+
+    @GetMapping("/countRecipeByMainCate/{mainCategory}")
+    public ApiResponse<Integer> getRecipesCountByMainCategory(@PathVariable String mainCategory) {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Recipe Count for MainCategory: " + mainCategory);
+        response.setResult(recipeService.countRecipesByMainCategory(mainCategory));
         return response;
     }
 }
