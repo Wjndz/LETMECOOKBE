@@ -14,4 +14,5 @@ public interface CommentRepository extends JpaRepository<Comment, String>, JpaSp
     Page<Comment> findByStatus(CommentStatus status, Pageable pageable); // Use the imported enum!
     Page<Comment> findByStatusAndRecipe_Id(CommentStatus status, String recipeId, Pageable pageable); // Use the imported enum!
     Page<Comment> findByCommentTextContainingIgnoreCase(String commentText, Pageable pageable);
+    long countByStatus(CommentStatus status);
 }

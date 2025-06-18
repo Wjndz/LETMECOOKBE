@@ -11,11 +11,13 @@ import com.example.letmecookbe.mapper.CommentMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.CommentRepository;
 import com.example.letmecookbe.repository.RecipeRepository;
+import com.example.letmecookbe.repository.ReportRepository; // THÊM IMPORT NÀY
+import com.example.letmecookbe.enums.ReportType; // THÊM IMPORT NÀY (giả sử bạn có enum ReportType)
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable; // Đã thêm import này
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -36,6 +39,7 @@ public class CommentService {
     CommentMapper commentMapper;
     AccountRepository accountRepository;
     RecipeRepository recipeRepository;
+    private final ReportRepository reportRepository; // THÊM DÒNG NÀY ĐỂ INJECT ReportRepository
 
     // --- 1. Tạo Comment ---
     @PreAuthorize("hasAuthority('CREATE_COMMENT')")
@@ -52,7 +56,7 @@ public class CommentService {
         Comment comment = commentMapper.toComment(request);
         comment.setAccount(account);
         comment.setRecipe(recipe);
-        comment.setStatus(CommentStatus.APPROVED); // Đặt giá trị status
+        comment.setStatus(CommentStatus.APPROVED);
         comment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }
@@ -110,10 +114,10 @@ public class CommentService {
     // --- 6. Xem tất cả Comment (có phân trang) ---
     @PreAuthorize("hasRole('ADMIN')")
     public Page<CommentResponse> getAllComments(Pageable pageable,
-        String searchTerm,
-        String recipeId,
-        String status,
-        String date) {
+                                                String searchTerm,
+                                                String recipeId,
+                                                String status,
+                                                String date) {
         Specification<Comment> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             // Filter by searchTerm (commentText or account username)
@@ -166,5 +170,24 @@ public class CommentService {
         }
         comment = commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
+    }
+
+    // --- 8. Lấy tổng số lượng comment theo trạng thái báo cáo (ví dụ: PENDING) ---
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ ADMIN mới có quyền này
+    public long countCommentsByStatus(CommentStatus status) {
+        return commentRepository.countByStatus(status);
+    }
+
+    // --- 9. Lấy tổng số lượng TẤT CẢ comment trong hệ thống ---
+    @PreAuthorize("hasRole('ADMIN')") // Hoặc quyền phù hợp
+    public long getTotalCommentsCount() {
+        return commentRepository.count();
+    }
+
+    // --- 10. Lấy tổng số lượng báo cáo comment từ entity Report ---
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ ADMIN mới có quyền này
+    public long getTotalCommentReportsFromReportEntity() {
+        // Đảm bảo ReportType.COMMENT là giá trị enum chính xác trong ReportType của bạn
+        return reportRepository.countByReportType(ReportType.REPORT_COMMENT);
     }
 }

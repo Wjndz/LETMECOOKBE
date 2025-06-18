@@ -82,10 +82,11 @@ public enum ErrorCode {
     INVALID_DIET_TYPE(8885, "Invalid diet type", HttpStatus.BAD_REQUEST),
     REPORT_NOT_FOUND(8884, "Report not found", HttpStatus.NOT_FOUND),
     CANNOT_REPORT_OWN_CONTENT(8883, "Cannot report own content", HttpStatus.BAD_REQUEST),
-
+    CANNOT_REPORT_OWN_ACCOUNT(8884, "Cannot report own account", HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND(8884, "User not found", HttpStatus.NOT_FOUND),
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
     INVALID_COMMENT_STATUS(8889, "Invalid comment status", HttpStatus.BAD_REQUEST),
-
+    getEvidenceImage(8889, "Evidence image", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

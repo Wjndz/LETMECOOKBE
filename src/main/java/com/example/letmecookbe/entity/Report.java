@@ -1,4 +1,5 @@
 package com.example.letmecookbe.entity;
+import com.example.letmecookbe.enums.ReportSeverity;
 import com.example.letmecookbe.enums.ReportStatus;
 import com.example.letmecookbe.enums.ReportType;
 import jakarta.persistence.*;
@@ -25,6 +26,8 @@ public class Report {
     ReportType reportType;
     String reportedItemId;
     String reason;
+    String description;
+    String evidenceImageUrl;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     ReportStatus status;
@@ -34,7 +37,11 @@ public class Report {
     @JoinColumn(name = "resolved_by_admin_id")
     Account resolvedByAdmin;
     LocalDateTime resolvedAt;
-
+    @Enumerated(EnumType.STRING) // Lưu dưới dạng chuỗi trong DB
+    private ReportSeverity severity;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_account_id") // ID của người bị báo cáo
+    private Account reportedAccount; // Trường mới
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
