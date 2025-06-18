@@ -12,6 +12,7 @@ import com.example.letmecookbe.repository.IngredientsRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class IngredientService {
     IngredientsRepository ingredientsRepository;
     IngredientsMapper ingredientsMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public IngredientsResponse createIngredients(IngredientsCreationRequest request){
         if(ingredientsRepository.existsByIngredientName(request.getIngredientName())){
             throw new AppException(ErrorCode.INGREDIENT_EXISTED);
@@ -33,6 +35,7 @@ public class IngredientService {
         return ingredientsMapper.toIngredientsResponse(savedIngredients);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public IngredientsResponse UpdateIngredients(String id,IngredientsUpdateRequest request){
         Ingredients ingredients = ingredientsRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.INGREDIENT_NOT_EXISTED));
@@ -54,12 +57,14 @@ public class IngredientService {
         return ingredientsMapper.toIngredientsResponse(savedIngredients);
     }
 
+    @PreAuthorize("hasAuthority('GET_INGREDIENTS')")
     public List<Ingredients> getAllIngredients(){
         if(ingredientsRepository.findAll().isEmpty())
             throw new AppException(ErrorCode.LIST_EMPTY);
         return ingredientsRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public String deleteIngredients(String id){
         Ingredients ingredients = ingredientsRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.INGREDIENT_NOT_EXISTED));
