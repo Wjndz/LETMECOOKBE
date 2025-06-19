@@ -13,6 +13,7 @@ public class CommentResponse {
     String accountId; // ID của người dùng đã tạo comment
     String username;  // Tên người dùng tạo comment (có thể lấy từ Account entity)
     String recipeId;  // ID của công thức mà comment thuộc về
-    String recipeTitle; // Tiêu đề của công thức (có thể lấy từ Recipe entity)
+    String recipeTitle;
+    private String status;// Tiêu đề của công thức (có thể lấy từ Recipe entity)
     LocalDateTime createdAt; // Thời gian comment được tạo
 }

@@ -1,8 +1,10 @@
 package com.example.letmecookbe.controller;
 
+import com.example.letmecookbe.service.ReportService; // ĐẢM BẢO ĐÃ IMPORT ReportService
 import com.example.letmecookbe.dto.request.CommentRequest;
-import com.example.letmecookbe.dto.response.ApiResponse; // Đảm bảo đã import
+import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.CommentResponse;
+import com.example.letmecookbe.enums.CommentStatus;
 import com.example.letmecookbe.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -15,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
-import java.util.List; // Vẫn giữ import nếu bạn có các phương thức khác trả về List
+import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
@@ -23,9 +25,10 @@ import java.util.List; // Vẫn giữ import nếu bạn có các phương thứ
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CommentController {
     CommentService commentService;
+    private final ReportService reportService; // THÊM DÒNG NÀY ĐỂ INJECT ReportService
 
     // --- 1. Xem tất cả Comment của một Bài đăng (GET) ---
-    @GetMapping("/recipe/{recipeId}") // Đường dẫn mới để lấy comment theo recipe
+    @GetMapping("/recipe/{recipeId}")
     public ResponseEntity<Page<CommentResponse>> getCommentsByRecipe(
             @PathVariable String recipeId,
             @PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -47,7 +50,7 @@ public class CommentController {
     }
 
     // --- 3. Chỉnh sửa Comment (PUT) ---
-    @PutMapping("/{commentId}")
+    @PutMapping("/{recipeId}/{commentId}")
     public ResponseEntity<ApiResponse<CommentResponse>> updateComment(
             @PathVariable String commentId,
             @RequestBody @Valid CommentRequest request) {
@@ -79,10 +82,49 @@ public class CommentController {
     // --- MỚI THÊM: 6. Xem tất cả Comment trong hệ thống (có phân trang) ---
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<Page<CommentResponse>>> getAllComments(
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String recipeId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String date) {
+
         ApiResponse<Page<CommentResponse>> response = new ApiResponse<>();
-        response.setMessage("Get all comments with pagination");
-        response.setResult(commentService.getAllComments(pageable));
+        response.setMessage("Get all comments with pagination and filters");
+        response.setResult(commentService.getAllComments(pageable, searchTerm, recipeId, status, date));
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{commentId}/status")
+    public ResponseEntity<ApiResponse<CommentResponse>> updateCommentStatus(
+            @PathVariable String commentId,
+            @RequestParam("status") String newStatus) {
+        CommentResponse updatedComment = commentService.updateCommentStatus(commentId, newStatus);
+        ApiResponse<CommentResponse> response = new ApiResponse<>();
+        response.setMessage("Comment status updated successfully");
+        response.setResult(updatedComment);
+        return ResponseEntity.ok(response);
+    }
+
+    // Endpoint để lấy tổng số comment theo trạng thái
+    @GetMapping("/count-by-status")
+    public ApiResponse<Long> countCommentsByStatus(@RequestParam CommentStatus status) {
+        long count = commentService.countCommentsByStatus(status);
+        return ApiResponse.<Long>builder()
+                .code(1000)
+                .message("Get total comments by status successfully")
+                .result(count)
+                .build();
+    }
+
+    // Endpoint để lấy tổng số báo cáo comment từ bảng reports
+    @GetMapping("/total-comment-reports")
+    public ApiResponse<Long> getTotalCommentReportsFromReportEntity() {
+        // Gọi service của ReportService để lấy tổng số báo cáo comment
+        long count = reportService.getTotalCommentReportsFromReportEntity();
+        return ApiResponse.<Long>builder()
+                .code(1000)
+                .message("Get total comment reports from Report entity successfully")
+                .result(count)
+                .build();
     }
 }

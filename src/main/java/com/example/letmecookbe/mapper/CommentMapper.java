@@ -12,6 +12,7 @@ public interface CommentMapper {
     @Mapping(source = "account.username", target = "username")
     @Mapping(source = "recipe.id", target = "recipeId")
     @Mapping(source = "recipe.title", target = "recipeTitle")
+    @Mapping(source = "status", target = "status")
     CommentResponse toCommentResponse(Comment comment);
 
 
