@@ -13,4 +13,5 @@ import lombok.experimental.FieldDefaults;
 public class IngredientsResponse {
     String ingredientName;
     String caloriesPerUnit;
+    String measurementUnit;
 }

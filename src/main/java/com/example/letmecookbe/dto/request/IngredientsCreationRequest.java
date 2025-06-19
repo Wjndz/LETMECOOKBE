@@ -15,4 +15,6 @@ public class IngredientsCreationRequest {
 
     @NotBlank(message = "NOT_NULL")
     String caloriesPerUnit;
+    @NotBlank(message = "NOT_NULL")
+    String measurementUnit;
 }

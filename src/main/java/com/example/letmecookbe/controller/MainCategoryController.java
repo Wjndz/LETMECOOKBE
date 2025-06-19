@@ -43,7 +43,7 @@ public class MainCategoryController {
         return response;
     }
 
-    @DeleteMapping("/deleteMainCategory/{id}")
+    @DeleteMapping("/delete/{id}")
     public ApiResponse<String> deleteMainCategory(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setResult(service.deleteMainCategory(id));

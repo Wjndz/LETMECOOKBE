@@ -22,6 +22,8 @@ public class RecipeResponse {
     String status;
     String image;
     String subCategoryId;
+    String subCategoryName;
     String accountId;
+    String accountName;
     LocalDateTime createAt;
 }

@@ -19,4 +19,5 @@ public class Ingredients {
     String id;
     String ingredientName;
     String caloriesPerUnit;
+    String measurementUnit;
 }
