@@ -108,8 +108,7 @@ public class RecipeService {
         }
         return recipePage.map(recipeMapper::toRecipeResponse);
     }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
     public List<RecipeResponse> getRecipeByAccountId(){
         List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(getAccountIdFromContext());
         if (accountRecipes.isEmpty()) {
@@ -212,13 +211,13 @@ public class RecipeService {
 
     @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
     public int countRecipeByUserId(String accountId) {
-        if (!accountRepository.existsById(accountId)) {
+        // ✅ Don't use parameter, get from token context
+        String realAccountId = getAccountIdFromContext();
+
+        if (!accountRepository.existsById(realAccountId)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
-        int count = RecipeRepository.countRecipesByAccountId(accountId);
-        if (count < 0) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
+        int count = RecipeRepository.countRecipesByAccountId(realAccountId);
         return count;
     }
 
@@ -233,6 +232,12 @@ public class RecipeService {
 
     @PreAuthorize("hasAnyAuthority('COUNT_APPROVED_REICPE')")
     public int countApprovedRecipes(){
+        String realAccountId = getAccountIdFromContext();
+
+        if (!accountRepository.existsById(realAccountId)) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+
         int count= RecipeRepository.countApprovedRecipes();
         if (count < 0) {
             throw new AppException(ErrorCode.LIST_EMPTY);

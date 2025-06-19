@@ -31,6 +31,14 @@ public class AuthController {
                 .build();
     }
 
+    @PostMapping("/setup-token")
+    public ApiResponse<AuthResponse> authenticateForSetup(@RequestBody AuthRequest request) {
+        var result = authService.authenticateForSetup(request);
+        return ApiResponse.<AuthResponse>builder()
+                .result(result)
+                .build();
+    }
+
     @PostMapping("/google")
     public ApiResponse<AuthResponse> googleSignIn(@RequestBody GoogleSignInRequest request) throws Exception {
         var result = authService.googleSignIn(request);

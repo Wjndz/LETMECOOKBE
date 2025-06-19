@@ -5,7 +5,6 @@ import com.example.letmecookbe.dto.request.RecipeUpdateRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.RecipeResponse;
 import com.example.letmecookbe.service.RecipeService;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -152,8 +151,9 @@ public class RecipeController {
     @GetMapping("/count/{accountId}")
     public ApiResponse<Integer> getRecipeCountByUser(@PathVariable String accountId) {
         ApiResponse<Integer> response = new ApiResponse<>();
-        response.setMessage("Get Recipe Count for User: " + accountId);
-        response.setResult(recipeService.countRecipeByUserId(accountId));
+        // ✅ Ignore pathVariable, get from token context instead
+        response.setMessage("Get Recipe Count for Current User");
+        response.setResult(recipeService.countRecipeByUserId(null)); // Pass null, service will use getAccountIdFromContext()
         return response;
     }
 

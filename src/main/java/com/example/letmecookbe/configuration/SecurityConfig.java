@@ -30,7 +30,7 @@ public class SecurityConfig {
             "/accounts",
             "/accounts/request-password-reset",
             "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google",
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google","auth/setup-token",
             "/findByKeyWord/**",
     };
 
@@ -63,7 +63,10 @@ public class SecurityConfig {
 
         // Ghi rõ localhost thay vì "*"
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:8081",
+                "http://192.168.1.5:8081"
+
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

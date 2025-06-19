@@ -5,5 +5,8 @@ public enum DietType {
     DIET,
     NORMAL,
     SALT_FREE,
-    MUSCLE_GAIN
+    MUSCLE_GAIN,
+    KETO,
+    LOW_CARB,
+    MEDITERRANEAN
 }

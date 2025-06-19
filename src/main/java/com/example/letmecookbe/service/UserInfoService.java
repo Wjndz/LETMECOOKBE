@@ -35,8 +35,10 @@ public class UserInfoService {
     UserInfoMapper userInfoMapper;
     FileStorageService fileStorageService;
 
-    @PreAuthorize("hasRole('USER')")
-    public UserInfoResponse createUserInfo(String accountId, UserInfoCreationRequest request) {
+    @PreAuthorize("hasAuthority('CREATE_USER_INFO')")
+    public UserInfoResponse createUserInfo(UserInfoCreationRequest request) { // ✅ Remove accountId parameter
+        String accountId = getAccountIdFromContext(); // ✅ Get from context
+
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
