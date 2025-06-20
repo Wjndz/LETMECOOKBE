@@ -195,6 +195,16 @@ public class RecipeService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    public RecipeResponse changeStatusToPending(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        recipe.setStatus(String.valueOf(RecipeStatus.PENDING));
+        Recipe updatedRecipe = RecipeRepository.save(recipe);
+        return recipeMapper.toRecipeResponse(updatedRecipe);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     public RecipeResponse changeStatusToNotApproved(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)

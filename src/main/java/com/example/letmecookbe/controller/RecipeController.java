@@ -124,6 +124,14 @@ public class RecipeController {
         return response;
     }
 
+    @PostMapping("/changeStatusToPending/{id}")
+    public ApiResponse<RecipeResponse> changeStatusToPending(@PathVariable String id){
+        ApiResponse<RecipeResponse> response = new ApiResponse<>();
+        response.setMessage("Change Status To Pending");
+        response.setResult(recipeService.changeStatusToPending(id));
+        return response;
+    }
+
     @PostMapping("/like/{id}")
     public ApiResponse<RecipeResponse> likeRecipe(@PathVariable String id){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();
