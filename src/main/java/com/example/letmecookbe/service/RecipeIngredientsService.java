@@ -83,13 +83,12 @@ public class RecipeIngredientsService {
     }
 
     @PreAuthorize("hasAuthority('DELETE_RECIPE_INGREDIENTS')")
-    public String deleteRecipeIngredients(String RecipeId,String IngredientId){
-        RecipeIngredients recipeIngredients = recipeIngredientsRepository.findRecipeIngredientsByRecipeIdAndIngredientId(RecipeId,IngredientId);
-        if(recipeIngredients == null){
-            throw new AppException(ErrorCode.RECIPE_INGREDIENTS_NOT_EXISTED);
-        }
-        recipeIngredientsRepository.delete(recipeIngredients);
-        if(recipeIngredientsRepository.findRecipeIngredientsByRecipeIdAndIngredientId(RecipeId,IngredientId) != null){
+    public String deleteRecipeIngredients(String IngredientId){
+        RecipeIngredients recipeIngredients = recipeIngredientsRepository.findById(IngredientId).orElseThrow(
+                ()-> new AppException(ErrorCode.RECIPE_INGREDIENTS_NOT_EXISTED)
+        );
+        recipeIngredientsRepository.deleteById(IngredientId);
+        if(recipeIngredientsRepository.findById(IngredientId).isPresent()){
             return "delete recipe ingredients failed";
         }
         return "delete recipe ingredients successfully";

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,24 +25,33 @@ public class MainCategoryService {
     MainCategoryMapper mainCategoryMapper;
     RecipeRepository recipeRepository;
     SubCategoryRepository subCategoryRepository;
-//    RecipeDeletionService recipeDeletionService;
+    RecipeDeletionService recipeDeletionService;
+    private final FileStorageService fileStorageService;
 
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
+    public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory, MultipartFile file) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
+        String categoryImg = fileStorageService.uploadFile(file);
         MainCategory main = mainCategoryMapper.toMainCategory(mainCategory);
+        main.setCategoryImg(categoryImg);
         MainCategory savedMain = repository.save(main);
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
+    public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory, MultipartFile file) {
         MainCategory main = repository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
-        main.setCategoryName(mainCategory.getCategoryName());
+        if(!mainCategory.getCategoryName().isBlank()){
+            main.setCategoryName(mainCategory.getCategoryName());
+        }
+        if (file != null && !file.isEmpty()) {
+            String categoryImg = fileStorageService.uploadFile(file);
+            main.setCategoryImg(categoryImg);
+        }
         MainCategory savedMain = repository.save(main);
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
@@ -53,37 +63,37 @@ public class MainCategoryService {
         return repository.findAll();
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @Transactional
-//    public String deleteMainCategory(String id) {
-//        MainCategory mainCategory = repository.findById(id)
-//                .orElseThrow(() -> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
-//
-//        try {
-//            // 1. Lấy tất cả SubCategory thuộc MainCategory này
-//           List<SubCategory> subCategories = subCategoryRepository.findAllByMainCategoryId(id);
-//
-//            // 2. Với mỗi SubCategory, xử lý tất cả Recipe của nó
-//            for (SubCategory subCategory : subCategories) {
-//                List<Recipe> recipes = recipeRepository.findRecipeBySubCategoryId(subCategory.getId());
-//
-//                // 3. Với mỗi Recipe, xóa các dữ liệu liên quan theo thứ tự
-//                recipeDeletionService.deleteRecipesAndRelatedData(recipes);
-//            }
-//
-//            // 5. Xóa tất cả SubCategory (vì SubCategory.category_id → MainCategory.id)
-//            if (!subCategories.isEmpty()) {
-//                subCategoryRepository.deleteAll(subCategories);
-//            }
-//            // 6. Cuối cùng xóa MainCategory
-//            repository.deleteById(id);
-//
-//            return "Xóa MainCategory và tất cả dữ liệu liên quan thành công: " + mainCategory.getCategoryName();
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Lỗi khi xóa MainCategory: " + e.getMessage(), e);
-//        }
-//    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public String deleteMainCategory(String id) {
+        MainCategory mainCategory = repository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
+
+        try {
+            // 1. Lấy tất cả SubCategory thuộc MainCategory này
+           List<SubCategory> subCategories = subCategoryRepository.findAllByMainCategoryId(id);
+
+            // 2. Với mỗi SubCategory, xử lý tất cả Recipe của nó
+            for (SubCategory subCategory : subCategories) {
+                List<Recipe> recipes = recipeRepository.findRecipeBySubCategoryId(subCategory.getId());
+
+                // 3. Với mỗi Recipe, xóa các dữ liệu liên quan theo thứ tự
+                recipeDeletionService.deleteRecipesAndRelatedData(recipes);
+            }
+
+            // 5. Xóa tất cả SubCategory (vì SubCategory.category_id → MainCategory.id)
+            if (!subCategories.isEmpty()) {
+                subCategoryRepository.deleteAll(subCategories);
+            }
+            // 6. Cuối cùng xóa MainCategory
+            repository.deleteById(id);
+
+            return "Xóa MainCategory và tất cả dữ liệu liên quan thành công: " + mainCategory.getCategoryName();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa MainCategory: " + e.getMessage(), e);
+        }
+    }
 
 
 }

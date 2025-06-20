@@ -27,8 +27,8 @@ public class RecipeStepsController {
     public ApiResponse<RecipeStepsResponse> createRecipeSteps(
             @PathVariable String id,
             @RequestPart("step") String step,
-            @RequestPart("description") String description,
-            @RequestPart("waitingTime") String waitingTime,
+            @RequestParam("description") String description,
+            @RequestParam("waitingTime") String waitingTime,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         int step2 = Integer.parseInt(step);
         RecipeStepsCreationRequest request = RecipeStepsCreationRequest.builder()

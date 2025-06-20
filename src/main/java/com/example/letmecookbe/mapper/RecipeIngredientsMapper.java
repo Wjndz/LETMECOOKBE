@@ -11,6 +11,9 @@ public interface RecipeIngredientsMapper {
 
     RecipeIngredients toRecipeIngredients(RecipeIngredientsCreationRequest ingredients);
 
+    @Mapping(source = "ingredient.measurementUnit",target = "unit")
+    @Mapping(source = "ingredient.id",target = "ingredientId")
     @Mapping(source = "ingredient.ingredientName", target = "ingredientName")
+//    @Mapping(source = "RecipeIngredient.id", target = "id")
     RecipeIngredientsResponse toRecipeIngredientsResponse(RecipeIngredients recipeIngredients);
 }

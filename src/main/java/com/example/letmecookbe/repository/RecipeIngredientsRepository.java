@@ -18,4 +18,11 @@ public interface RecipeIngredientsRepository extends JpaRepository<RecipeIngredi
     @Query("DELETE FROM RecipeIngredients ri WHERE ri.recipe.subCategory.mainCategory.id = :mainCategoryId")
     void deleteByMainCategoryId(String mainCategoryId);
 
+    @Modifying
+    @Query("DELETE FROM RecipeIngredients ri WHERE ri.ingredient.id = :ingredientId")
+    void deleteRecipeIngredientsByIngredientId(String ingredientId);
+
+    @Modifying
+    @Query("delete from RecipeIngredients ri where ri.ingredient.id = :ingredientId and ri.recipe.id = :recipeId")
+    void deleteRecipeIngredientsByRecipeIdAndIngredientId(String recipeId, String ingredientId);
 }

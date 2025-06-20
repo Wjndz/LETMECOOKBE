@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,28 +30,19 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 public class RecipeService {
     RecipeRepository RecipeRepository;
     RecipeMapper recipeMapper;
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
-//    RecipeDeletionService recipeDeletionService;
+    RecipeDeletionService recipeDeletionService;
     private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
-
-        log.info("🔍 Looking for account with email: {}", email);
-
         Account account = accountRepository.findAccountByEmail(email)
-                .orElseThrow(() -> {
-                    log.error("❌ Account not found for email: {}", email);
-                    return new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
-                });
-
-        log.info("✅ Found account: {} with ID: {}", account.getEmail(), account.getId());
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         return account.getId();
     }
 
@@ -119,6 +109,17 @@ public class RecipeService {
         return recipePage.map(recipeMapper::toRecipeResponse);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<RecipeResponse> getRecipeByAccountId(){
+        List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(getAccountIdFromContext());
+        if (accountRecipes.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return accountRecipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
+
     @PreAuthorize("hasAuthority('GET_RECIPE_BY_SUB_CATEGORY')")
     public Page<RecipeResponse> getRecipeBySubCategoryId(String id, Pageable pageable){
         if(!subCategoryRepository.existsById(id)){
@@ -145,23 +146,23 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-//    @PreAuthorize("hasRole('DELETE_RECIPE')")
-//    @Transactional
-//    public String deleteRecipe(String id){
-//        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
-//                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
-//        );
-//        try {
-//            // Truyền 1 recipe vào list
-//            recipeDeletionService.deleteRecipesAndRelatedData(List.of(recipe));
-//
-//            return "Xóa Recipe và tất cả dữ liệu liên quan thành công" ;
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Lỗi khi xóa Recipe: " + e.getMessage(), e);
-//        }
-//
-//    }
+    @PreAuthorize("hasAuthority('DELETE_RECIPE')")
+    @Transactional
+    public String deleteRecipe(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        try {
+            // Truyền 1 recipe vào list
+            recipeDeletionService.deleteRecipesAndRelatedData(List.of(recipe));
+
+            return "Xóa Recipe và tất cả dữ liệu liên quan thành công" ;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa Recipe: " + e.getMessage(), e);
+        }
+
+    }
 
     @PreAuthorize("hasAuthority('LIKE')")
     public RecipeResponse Like(String id) {
@@ -193,6 +194,26 @@ public class RecipeService {
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public RecipeResponse changeStatusToPending(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        recipe.setStatus(String.valueOf(RecipeStatus.PENDING));
+        Recipe updatedRecipe = RecipeRepository.save(recipe);
+        return recipeMapper.toRecipeResponse(updatedRecipe);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public RecipeResponse changeStatusToNotApproved(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        recipe.setStatus(String.valueOf(RecipeStatus.NOT_APPROVED));
+        Recipe updatedRecipe = RecipeRepository.save(recipe);
+        return recipeMapper.toRecipeResponse(updatedRecipe);
+    }
+
     @PreAuthorize("hasAnyAuthority('TOP_5_RECIPE')")
     public List<RecipeResponse> getTop5RecipesByTotalLikes(){
         List<Recipe> recipeList = RecipeRepository.findTop5RecipesByTotalLikes();
@@ -214,20 +235,16 @@ public class RecipeService {
         return count;
     }
 
-    @PreAuthorize("hasAnyAuthority('COUNT_RECIPE_BY_ACCOUNT')")
-    public List<RecipeResponse> getRecipeByAccountId(){
-        String accountId = getAccountIdFromContext();
-        List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(accountId);
-
-        // ✅ Return empty list instead of throwing exception
-        if (accountRecipes.isEmpty()) {
-            log.info("📭 No recipes found for account: {}, returning empty list", accountId);
-            return List.of(); // ✅ Return empty list, not exception
+    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
+    public int countRecipeByUserId(String accountId) {
+        if (!accountRepository.existsById(accountId)) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
-
-        return accountRecipes.stream()
-                .map(recipeMapper::toRecipeResponse)
-                .collect(Collectors.toList());
+        int count = RecipeRepository.countRecipesByAccountId(accountId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
     }
 
     @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_SUB_CATEGORY')")
@@ -241,12 +258,6 @@ public class RecipeService {
 
     @PreAuthorize("hasAnyAuthority('COUNT_APPROVED_REICPE')")
     public int countApprovedRecipes(){
-        String realAccountId = getAccountIdFromContext();
-
-        if (!accountRepository.existsById(realAccountId)) {
-            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
-        }
-
         int count= RecipeRepository.countApprovedRecipes();
         if (count < 0) {
             throw new AppException(ErrorCode.LIST_EMPTY);

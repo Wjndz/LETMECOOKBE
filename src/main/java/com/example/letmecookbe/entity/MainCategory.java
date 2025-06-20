@@ -18,5 +18,6 @@ public class MainCategory {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     String categoryName;
+    String categoryImg;
 }
 
