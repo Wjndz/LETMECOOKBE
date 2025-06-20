@@ -274,4 +274,31 @@ public class RecipeService {
         }
         return count;
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public int countAllRecipes(){
+        int count= RecipeRepository.countAllRecipes();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+    @PreAuthorize(("hasRole('ADMIN')"))
+    public int countPendingRecipes(){
+        int count= RecipeRepository.countPendingRecipes();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
+    @PreAuthorize(("hasRole('ADMIN')"))
+    public int countNotApprovedRecipes(){
+        int count= RecipeRepository.countNotApprovedRecipes();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
 }

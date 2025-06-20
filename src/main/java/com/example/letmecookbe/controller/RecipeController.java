@@ -202,4 +202,28 @@ public class RecipeController {
         response.setResult(recipeService.countRecipesByMainCategory(mainCategory));
         return response;
     }
+
+    @GetMapping("/countAllRecipes")
+    public ApiResponse<Integer> getAllRecipeCount() {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get All Recipe Count");
+        response.setResult(recipeService.countAllRecipes());
+        return response;
+    }
+
+    @GetMapping("/countPendingRecipes")
+    public ApiResponse<Integer> getPendingRecipeCount() {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Pending Recipe Count");
+        response.setResult(recipeService.countPendingRecipes());
+        return response;
+    }
+
+    @GetMapping("/countNotApprovedRecipes")
+    public ApiResponse<Integer> getNotApprovedRecipeCount() {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get Not Approved Recipe Count");
+        response.setResult(recipeService.countNotApprovedRecipes());
+        return response;
+    }
 }

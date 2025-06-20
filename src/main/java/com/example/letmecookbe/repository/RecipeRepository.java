@@ -41,6 +41,15 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
     @Query("SELECT COUNT(c) FROM Recipe c WHERE c.subCategory.mainCategory.id = :mainCategoryId AND c.status ='APPROVED' ")
     int countRecipesByMainCategoryId(String mainCategoryId);
 
+    @Query("SELECT COUNT(c) FROM Recipe c ")
+    int countAllRecipes();
+
+    @Query("SELECT COUNT(c) FROM Recipe c WHERE c.status = 'PENDING'")
+    int countPendingRecipes();
+
+    @Query("SELECT COUNT(c) FROM Recipe c WHERE c.status = 'NOT_APPROVED'")
+    int countNotApprovedRecipes();
+
     @Query("SELECT r FROM Recipe r WHERE r.subCategory.mainCategory.id = :mainCategoryId")
     List<Recipe> findAllByMainCategoryId(String mainCategoryId);
 
