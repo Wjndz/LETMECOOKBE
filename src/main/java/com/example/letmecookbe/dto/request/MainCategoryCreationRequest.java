@@ -14,4 +14,5 @@ public class MainCategoryCreationRequest {
     @NotBlank(message = "NOT_NULL")
     @Size(min = 2, message ="CATEGORYNAME_INVALID")
     String categoryName;
+    String categoryImg;
 }

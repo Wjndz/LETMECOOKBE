@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,23 +26,32 @@ public class MainCategoryService {
     RecipeRepository recipeRepository;
     SubCategoryRepository subCategoryRepository;
     RecipeDeletionService recipeDeletionService;
+    private final FileStorageService fileStorageService;
 
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory) {
+    public MainCategoryResponse createMainCategory(MainCategoryCreationRequest mainCategory, MultipartFile file) {
         if (repository.existsByCategoryName(mainCategory.getCategoryName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
+        String categoryImg = fileStorageService.uploadFile(file);
         MainCategory main = mainCategoryMapper.toMainCategory(mainCategory);
+        main.setCategoryImg(categoryImg);
         MainCategory savedMain = repository.save(main);
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory) {
+    public MainCategoryResponse updateCategoryName(String id, MainCategoryCreationRequest mainCategory, MultipartFile file) {
         MainCategory main = repository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.MAIN_CATEGORY_NOT_EXIST));
-        main.setCategoryName(mainCategory.getCategoryName());
+        if(!mainCategory.getCategoryName().isBlank()){
+            main.setCategoryName(mainCategory.getCategoryName());
+        }
+        if (file != null && !file.isEmpty()) {
+            String categoryImg = fileStorageService.uploadFile(file);
+            main.setCategoryImg(categoryImg);
+        }
         MainCategory savedMain = repository.save(main);
         return mainCategoryMapper.toMainCategoryResponse(savedMain);
     }
