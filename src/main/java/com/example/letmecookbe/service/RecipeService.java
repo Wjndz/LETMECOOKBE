@@ -146,7 +146,7 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasRole('DELETE_RECIPE')")
+    @PreAuthorize("hasAuthority('DELETE_RECIPE')")
     @Transactional
     public String deleteRecipe(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
@@ -190,6 +190,16 @@ public class RecipeService {
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
         recipe.setStatus(String.valueOf(RecipeStatus.APPROVED));
+        Recipe updatedRecipe = RecipeRepository.save(recipe);
+        return recipeMapper.toRecipeResponse(updatedRecipe);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public RecipeResponse changeStatusToNotApproved(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        recipe.setStatus(String.valueOf(RecipeStatus.NOT_APPROVED));
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }

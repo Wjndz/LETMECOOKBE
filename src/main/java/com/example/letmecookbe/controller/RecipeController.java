@@ -115,6 +115,15 @@ public class RecipeController {
         return response;
     }
 
+
+    @PostMapping("/changeStatusToNotApproved/{id}")
+    public ApiResponse<RecipeResponse> changeStatusToNotApproved(@PathVariable String id){
+        ApiResponse<RecipeResponse> response = new ApiResponse<>();
+        response.setMessage("Change Status To Not Approved");
+        response.setResult(recipeService.changeStatusToNotApproved(id));
+        return response;
+    }
+
     @PostMapping("/like/{id}")
     public ApiResponse<RecipeResponse> likeRecipe(@PathVariable String id){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();

@@ -23,6 +23,7 @@ import java.util.List;
 public class RecipeIngredientsController {
     RecipeIngredientsService recipeIngredientsService;
 
+
     @PostMapping("/create")
     public ApiResponse<RecipeIngredientsResponse> createRecipeIngredients(@RequestBody @Valid RecipeIngredientsCreationRequest request){
         ApiResponse<RecipeIngredientsResponse> response = new ApiResponse<>();
@@ -47,10 +48,11 @@ public class RecipeIngredientsController {
         return response;
     }
 
-    @DeleteMapping("/delete/{recipeId}/{ingredientId}")
-    public ApiResponse<String> deleteRecipeIngredients(@PathVariable String recipeId, @PathVariable String ingredientId){
+    @DeleteMapping("/delete/{ingredientId}")
+    public ApiResponse<String> deleteRecipeIngredients(
+                                                       @PathVariable String ingredientId){
         ApiResponse<String> response = new ApiResponse<>();
-        response.setResult(recipeIngredientsService.deleteRecipeIngredients(recipeId, ingredientId));
+        response.setResult(recipeIngredientsService.deleteRecipeIngredients( ingredientId));
         return response;
     }
 }

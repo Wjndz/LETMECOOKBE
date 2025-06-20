@@ -9,6 +9,9 @@ import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.IngredientsMapper;
 import com.example.letmecookbe.repository.IngredientsRepository;
+import com.example.letmecookbe.repository.RecipeIngredientsRepository;
+import com.example.letmecookbe.repository.RecipeRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +26,9 @@ import java.util.List;
 public class IngredientService {
 
     IngredientsRepository ingredientsRepository;
+    RecipeIngredientsRepository recipeIngredientsRepository;
     IngredientsMapper ingredientsMapper;
+
 
     @PreAuthorize("hasRole('ADMIN')")
     public IngredientsResponse createIngredients(IngredientsCreationRequest request){
@@ -65,10 +70,17 @@ public class IngredientService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public String deleteIngredients(String id){
         Ingredients ingredients = ingredientsRepository.findById(id).orElseThrow(
                 ()-> new AppException(ErrorCode.INGREDIENT_NOT_EXISTED));
+
+        // Xóa tất cả RecipeIngredients liên quan trước
+        recipeIngredientsRepository.deleteRecipeIngredientsByIngredientId(id);
+
+        // Sau đó xóa Ingredient
         ingredientsRepository.delete(ingredients);
+
         if(ingredientsRepository.existsByIngredientName(ingredients.getIngredientName())){
             return "delete ingredients failed: "+ id;
         }
