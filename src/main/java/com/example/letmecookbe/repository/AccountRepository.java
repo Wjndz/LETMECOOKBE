@@ -16,5 +16,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByUsername(String username);
 
     @Query("SELECT a FROM Account a WHERE a.email LIKE %:keyword%")
+
     List<Account> searchByEmail(String keyword);
 }

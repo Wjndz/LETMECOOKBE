@@ -64,7 +64,7 @@ public class ReportController {
      * Params: status (PENDING, RESOLVED, REJECTED), page, size, sort
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')") // <-- THÊM ANNOTATION NÀY VÌ ĐÂY LÀ CHỨC NĂNG ADMIN
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Page<ReportResponse>>> getAllReports(
             @RequestParam(required = false) String status,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
