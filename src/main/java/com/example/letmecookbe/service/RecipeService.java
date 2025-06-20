@@ -109,17 +109,6 @@ public class RecipeService {
         return recipePage.map(recipeMapper::toRecipeResponse);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public List<RecipeResponse> getRecipeByAccountId(){
-        List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(getAccountIdFromContext());
-        if (accountRecipes.isEmpty()) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
-        return accountRecipes.stream()
-                .map(recipeMapper::toRecipeResponse)
-                .collect(Collectors.toList());
-    }
-
     @PreAuthorize("hasAuthority('GET_RECIPE_BY_SUB_CATEGORY')")
     public Page<RecipeResponse> getRecipeBySubCategoryId(String id, Pageable pageable){
         if(!subCategoryRepository.existsById(id)){
@@ -235,17 +224,6 @@ public class RecipeService {
         return count;
     }
 
-    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
-    public int countRecipeByUserId(String accountId) {
-        if (!accountRepository.existsById(accountId)) {
-            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
-        }
-        int count = RecipeRepository.countRecipesByAccountId(accountId);
-        if (count < 0) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
-        return count;
-    }
 
     @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_SUB_CATEGORY')")
     public int countRecipeBySubCategoryId(String subCategoryId){
@@ -273,5 +251,20 @@ public class RecipeService {
             throw new AppException(ErrorCode.LIST_EMPTY);
         }
         return count;
+    }
+
+    @PreAuthorize("hasAnyAuthority('COUNT_RECIPE_BY_ACCOUNT')")
+    public List<RecipeResponse> getRecipeByAccountId(){
+        String accountId = getAccountIdFromContext();
+        List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(accountId);
+
+        // ✅ Return empty list instead of throwing exception
+        if (accountRecipes.isEmpty()) {
+            return List.of(); // ✅ Return empty list, not exception
+        }
+
+        return accountRecipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
     }
 }
