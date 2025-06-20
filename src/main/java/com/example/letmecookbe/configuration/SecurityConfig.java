@@ -29,8 +29,9 @@ public class SecurityConfig {
             "/accounts/send-code",
             "/accounts",
             "/accounts/request-password-reset",
-            "/accounts/reset-password",
+            "/accounts/reset-password","/accounts/check-status",
             "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google","auth/setup-token",
+            "/user-info",
             "/findByKeyWord/**",
     };
 

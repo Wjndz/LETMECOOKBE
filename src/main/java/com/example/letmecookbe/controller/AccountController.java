@@ -3,8 +3,10 @@ package com.example.letmecookbe.controller;
 import com.example.letmecookbe.dto.request.AccountCreationRequest;
 import com.example.letmecookbe.dto.request.ResetPasswordRequest;
 import com.example.letmecookbe.dto.response.AccountResponse;
+import com.example.letmecookbe.dto.response.AccountStatusResponse;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.EmailResponse;
+import com.example.letmecookbe.enums.AccountStatus;
 import com.example.letmecookbe.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -114,6 +116,13 @@ public class AccountController {
         List<EmailResponse> result = accountService.searchByEmail(keyword);
         return ApiResponse.<List<EmailResponse>>builder()
                 .result(result)
+                .build();
+    }
+
+    @GetMapping("/check-status")
+    public ApiResponse<AccountStatusResponse> checkAccountStatus(@RequestParam String email) {
+        return ApiResponse.<AccountStatusResponse>builder()
+                .result(accountService.checkAccountStatus(email))
                 .build();
     }
 }

@@ -27,7 +27,7 @@ public class SubCategoryService {
     SubCategoryRepository SubRepository;
     SubCategoryMapper subCategoryMapper;
     RecipeRepository recipeRepository;
-    RecipeDeletionService recipeDeletionService;
+//    RecipeDeletionService recipeDeletionService;
     private final FileStorageService fileStorageService;
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -77,24 +77,24 @@ public class SubCategoryService {
         return SubRepository.findAllByMainCategoryId(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
-    public String deleteSubCategory(String id) {
-        SubCategory subCategory = SubRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST));
-
-        try {
-            List<Recipe> recipes = recipeRepository.findRecipeBySubCategoryId(id);
-
-            recipeDeletionService.deleteRecipesAndRelatedData(recipes);
-
-            SubRepository.deleteById(id);
-
-            return "Xóa SubCategory và tất cả dữ liệu liên quan thành công: " + subCategory.getSubCategoryName();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi xóa SubCategory: " + e.getMessage(), e);
-        }
-    }
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @Transactional
+//    public String deleteSubCategory(String id) {
+//        SubCategory subCategory = SubRepository.findById(id)
+//                .orElseThrow(() -> new AppException(ErrorCode.SUB_CATEGORY_NOT_EXIST));
+//
+//        try {
+//            List<Recipe> recipes = recipeRepository.findRecipeBySubCategoryId(id);
+//
+//            recipeDeletionService.deleteRecipesAndRelatedData(recipes);
+//
+//            SubRepository.deleteById(id);
+//
+//            return "Xóa SubCategory và tất cả dữ liệu liên quan thành công: " + subCategory.getSubCategoryName();
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException("Lỗi khi xóa SubCategory: " + e.getMessage(), e);
+//        }
+//    }
 
 }

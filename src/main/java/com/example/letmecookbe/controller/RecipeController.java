@@ -122,12 +122,12 @@ public class RecipeController {
         return response;
     }
 
-    @DeleteMapping("/deleteRecipe/{id}")
-    public ApiResponse<String> deleteRecipe(@PathVariable String id){
-        ApiResponse<String> response = new ApiResponse<>();
-        response.setResult(recipeService.deleteRecipe(id));
-        return response;
-    }
+//    @DeleteMapping("/deleteRecipe/{id}")
+//    public ApiResponse<String> deleteRecipe(@PathVariable String id){
+//        ApiResponse<String> response = new ApiResponse<>();
+//        response.setResult(recipeService.deleteRecipe(id));
+//        return response;
+//    }
 
     @GetMapping("/getTop5Recipe")
     public ApiResponse<List<RecipeResponse>> getTop5Recipe(){
@@ -150,15 +150,6 @@ public class RecipeController {
         ApiResponse<Integer> response = new ApiResponse<>();
         response.setMessage("Get Total Recipe");
         response.setResult(recipeService.countRecipeBySubCategoryId());
-        return response;
-    }
-
-    @GetMapping("/count/{accountId}")
-    public ApiResponse<Integer> getRecipeCountByUser(@PathVariable String accountId) {
-        ApiResponse<Integer> response = new ApiResponse<>();
-        // ✅ Ignore pathVariable, get from token context instead
-        response.setMessage("Get Recipe Count for Current User");
-        response.setResult(recipeService.countRecipeByUserId(null)); // Pass null, service will use getAccountIdFromContext()
         return response;
     }
 

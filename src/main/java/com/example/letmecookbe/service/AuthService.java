@@ -114,13 +114,41 @@ public class AuthService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        var token = generateToken(account, false);
-        var refreshToken = generateToken(account, true);
+        var token = generateSetupToken(account);
+        var refreshToken = generateToken(account, true); // Keep existing refresh token
+
         return AuthResponse.builder()
                 .token(token)
                 .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
+    }
+
+    private String generateSetupToken(Account account) {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(account.getId()) // ✅ USE ACCOUNT ID instead of email
+                .issuer("letmecook.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
+                ))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("email", account.getEmail()) // ✅ Email as claim
+                .claim("scope", "SETUP") // ✅ Setup scope
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            log.error("Cannot create setup token", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public AuthResponse authenticate(AuthRequest request) {

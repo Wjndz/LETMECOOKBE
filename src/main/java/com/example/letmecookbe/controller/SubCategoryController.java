@@ -68,10 +68,10 @@ public class SubCategoryController {
         return response;
     }
 
-    @DeleteMapping("/deleteSubCategory/{id}")
-    public ApiResponse<String> deleteSubCategory(@PathVariable String id){
-        ApiResponse<String> response = new ApiResponse<>();
-        response.setResult(service.deleteSubCategory(id));
-        return response;
-    }
+//    @DeleteMapping("/deleteSubCategory/{id}")
+//    public ApiResponse<String> deleteSubCategory(@PathVariable String id){
+//        ApiResponse<String> response = new ApiResponse<>();
+//        response.setResult(service.deleteSubCategory(id));
+//        return response;
+//    }
 }

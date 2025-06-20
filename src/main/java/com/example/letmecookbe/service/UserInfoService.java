@@ -1,19 +1,25 @@
 package com.example.letmecookbe.service;
 
+import com.example.letmecookbe.constant.PreDefinedRole;
 import com.example.letmecookbe.dto.request.UserInfoCreationRequest;
 import com.example.letmecookbe.dto.request.UserInfoUpdateRequest;
 import com.example.letmecookbe.dto.response.UserInfoResponse;
 import com.example.letmecookbe.dto.response.UsernameResponse;
 import com.example.letmecookbe.entity.Account;
+import com.example.letmecookbe.entity.Role;
 import com.example.letmecookbe.entity.UserInfo;
+import com.example.letmecookbe.enums.AccountStatus;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.UserInfoMapper;
 import com.example.letmecookbe.repository.AccountRepository;
+import com.example.letmecookbe.repository.RoleRepository;
 import com.example.letmecookbe.repository.UserInfoRepository;
+import com.example.letmecookbe.util.TempAccountStorage;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,22 +36,50 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserInfoService {
     UserInfoRepository userInfoRepository;
     AccountRepository accountRepository;
     UserInfoMapper userInfoMapper;
+    RoleRepository roleRepository;
+    TempAccountStorage tempAccountStorage;
     FileStorageService fileStorageService;
 
-    @PreAuthorize("hasAuthority('CREATE_USER_INFO')")
-    public UserInfoResponse createUserInfo(UserInfoCreationRequest request) { // ✅ Remove accountId parameter
-        String accountId = getAccountIdFromContext(); // ✅ Get from context
-
+    public UserInfoResponse createUserInfo(String accountId, UserInfoCreationRequest request) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        log.info("🔍 Creating UserInfo for account: {}", account.getEmail());
+        log.info("📊 Current account status: {}", account.getStatus());
+        log.info("🔍 Account in temp storage: {}", tempAccountStorage.exists(account.getEmail()));
+
+        // ✅ Kiểm tra xem account này có phải từ temp storage không
+        if (tempAccountStorage.exists(account.getEmail())) {
+            log.info("🔄 Finalizing account creation for [{}]", account.getEmail());
+
+            // Hoàn tất việc tạo account
+            HashSet<Role> roles = new HashSet<>();
+            roleRepository.findById(PreDefinedRole.USER_ROLE).ifPresent(roles::add);
+            account.setRoles(roles);
+            account.setStatus(AccountStatus.ACTIVE); // ✅ Từ INACTIVE → ACTIVE
+
+            Account savedAccount = accountRepository.save(account);
+            log.info("✅ Account status updated to: {}", savedAccount.getStatus());
+            log.info("✅ Account roles: {}", savedAccount.getRoles().size());
+
+            // ✅ Clear temp storage
+            tempAccountStorage.remove(account.getEmail());
+            log.info("🗑️ Account [{}] removed from temp storage", account.getEmail());
+        } else {
+            log.warn("⚠️ Account [{}] NOT found in temp storage, status will remain: {}",
+                    account.getEmail(), account.getStatus());
+        }
 
         UserInfo userInfo = userInfoMapper.toUserInfo(request);
         userInfo.setAccount(account);
         UserInfo savedUserInfo = userInfoRepository.save(userInfo);
+
+        log.info("✅ UserInfo created successfully for account: {}", account.getEmail());
         return userInfoMapper.toUserInfoResponse(savedUserInfo);
     }
 

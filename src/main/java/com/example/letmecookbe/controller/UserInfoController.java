@@ -27,12 +27,11 @@ public class UserInfoController {
 
     @PostMapping
     public ApiResponse<UserInfoResponse> createUserInfo(
-            @RequestBody UserInfoCreationRequest request) { // ✅ Remove Authentication parameter
-
-        // ✅ Call without accountId - service will get it from context
-        var result = userInfoService.createUserInfo( request);
+            @RequestParam String accountId,
+            @RequestBody UserInfoCreationRequest request) {
+        UserInfoResponse response = userInfoService.createUserInfo(accountId, request);
         return ApiResponse.<UserInfoResponse>builder()
-                .result(result)
+                .result(response)
                 .build();
     }
 

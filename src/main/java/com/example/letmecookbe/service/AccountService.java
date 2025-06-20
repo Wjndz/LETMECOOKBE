@@ -3,6 +3,7 @@ package com.example.letmecookbe.service;
 import com.example.letmecookbe.constant.PreDefinedRole;
 import com.example.letmecookbe.dto.request.AccountCreationRequest;
 import com.example.letmecookbe.dto.response.AccountResponse;
+import com.example.letmecookbe.dto.response.AccountStatusResponse;
 import com.example.letmecookbe.dto.response.EmailResponse;
 import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.Role;
@@ -12,6 +13,8 @@ import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.AccountMapper;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.RoleRepository;
+import com.example.letmecookbe.repository.UserInfoRepository;
+import com.example.letmecookbe.util.TempAccountStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
@@ -38,14 +41,31 @@ public class AccountService {
     EmailVerification emailVerification;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
+    TempAccountStorage tempAccountStorage;
+    UserInfoRepository userInfoRepository;
 
     public void sendVerificationCode(String email) {
         String trimmedEmail = email.trim();
-        log.debug("Checking if email [{}] exists", trimmedEmail);
-        if (accountRepository.existsAccountByEmail(trimmedEmail)) {
-            log.debug("Email [{}] already exists, throwing exception", trimmedEmail);
+        log.debug("Checking email [{}] status", trimmedEmail);
+
+        // ✅ Kiểm tra account thật trong DB (đã hoàn tất)
+        boolean realAccountExists = accountRepository.existsAccountByEmail(trimmedEmail);
+
+        // ✅ Kiểm tra temp account
+        boolean tempAccountExists = tempAccountStorage.exists(trimmedEmail);
+
+        if (realAccountExists) {
+            // Account đã hoàn tất → không thể register lại
+            log.debug("Real account exists for email [{}]", trimmedEmail);
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
         }
+
+        if (tempAccountExists) {
+            // Có temp account → cho phép gửi lại code (có thể user muốn thử lại)
+            log.debug("Temp account exists for email [{}], allowing resend", trimmedEmail);
+            tempAccountStorage.remove(trimmedEmail); // Clear old temp data
+        }
+
         emailVerification.sendCode(trimmedEmail);
     }
 
@@ -60,21 +80,53 @@ public class AccountService {
             throw new AppException(ErrorCode.USERNAME_EXISTED);
         }
 
+        // Tạo account thật ngay lập tức với ID thật thay vì "pending"
         Account account = accountMapper.toAccount(req);
         account.setPassword(passwordEncoder.encode(req.getPassword()));
         account.setCreatedAt(LocalDateTime.now());
+        account.setStatus(AccountStatus.INACTIVE); // Đánh dấu là chưa hoàn tất
 
-        if (account.getStatus() == null) {
-            account.setStatus(AccountStatus.ACTIVE);
+        // Chưa gán role, chỉ gán khi hoàn tất đăng ký userInfo
+
+        Account savedAccount = accountRepository.save(account);
+
+        // Lưu thông tin trong TempAccountStorage để biết đây là account mới
+        tempAccountStorage.store(req.getEmail(), req);
+
+        return accountMapper.toAccountResponse(savedAccount);
+    }
+
+
+    public AccountStatusResponse checkAccountStatus(String email) {
+        String trimmedEmail = email.trim();
+
+        boolean realAccountExists = accountRepository.existsAccountByEmail(trimmedEmail);
+        boolean tempAccountExists = tempAccountStorage.exists(trimmedEmail);
+
+        if (realAccountExists) {
+            return AccountStatusResponse.builder()
+                    .status("COMPLETED") // Account đã hoàn tất
+                    .canLogin(true)
+                    .canRegister(false)
+                    .message("Account exists, please login")
+                    .build();
         }
-        HashSet<Role> roles = new HashSet<>();
-        roleRepository.findById(PreDefinedRole.USER_ROLE).ifPresent(roles::add);
 
-        account.setRoles(roles);
+        if (tempAccountExists) {
+            return AccountStatusResponse.builder()
+                    .status("PENDING") // Account chưa hoàn tất
+                    .canLogin(false)
+                    .canRegister(true) // Cho phép register lại hoặc continue
+                    .message("Account setup not completed")
+                    .build();
+        }
 
-        Account saved = accountRepository.save(account);
-        log.debug("Created account [{}] with id [{}]", saved.getUsername(), saved.getId());
-        return accountMapper.toAccountResponse(saved);
+        return AccountStatusResponse.builder()
+                .status("NOT_EXISTS")
+                .canLogin(false)
+                .canRegister(true)
+                .message("Email not registered")
+                .build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -175,6 +227,8 @@ public class AccountService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteAccount(String id) {
+        userInfoRepository.findByAccountId(id)
+                .ifPresent(userInfo -> userInfoRepository.delete(userInfo));
         accountRepository.deleteById(id);
     }
 
