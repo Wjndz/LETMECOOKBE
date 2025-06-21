@@ -15,6 +15,9 @@ public interface SubCategoryRepository extends JpaRepository<SubCategory, String
 
     List<SubCategory> findAllByMainCategoryId(String id);
 
+    @Query("SELECT COUNT(c) FROM SubCategory c")
+    int countAllSubCategories();
+
     @Modifying
     @Query("DELETE FROM SubCategory sc WHERE sc.mainCategory.id = :mainCategoryId")
     void deleteByMainCategoryId(String mainCategoryId);

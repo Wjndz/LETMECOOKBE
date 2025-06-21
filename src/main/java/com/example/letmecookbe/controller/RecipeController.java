@@ -139,12 +139,12 @@ public class RecipeController {
         return response;
     }
 
-//    @DeleteMapping("/deleteRecipe/{id}")
-//    public ApiResponse<String> deleteRecipe(@PathVariable String id){
-//        ApiResponse<String> response = new ApiResponse<>();
-//        response.setResult(recipeService.deleteRecipe(id));
-//        return response;
-//    }
+    @DeleteMapping("/deleteRecipe/{id}")
+    public ApiResponse<String> deleteRecipe(@PathVariable String id){
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setResult(recipeService.deleteRecipe(id));
+        return response;
+    }
 
     @GetMapping("/getTop5Recipe")
     public ApiResponse<List<RecipeResponse>> getTop5Recipe(){

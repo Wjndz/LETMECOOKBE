@@ -95,5 +95,13 @@ public class MainCategoryService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public int countAllMainCategories(){
+        int count= repository.countAllMainCategories();
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
 
 }

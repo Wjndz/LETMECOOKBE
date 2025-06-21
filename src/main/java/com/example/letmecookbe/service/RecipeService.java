@@ -284,7 +284,7 @@ public class RecipeService {
         return count;
     }
 
-    @PreAuthorize(("hasRole('ADMIN')"))
+    @PreAuthorize("hasRole('ADMIN')")
     public int countPendingRecipes(){
         int count= RecipeRepository.countPendingRecipes();
         if (count < 0) {
@@ -293,7 +293,7 @@ public class RecipeService {
         return count;
     }
 
-    @PreAuthorize(("hasRole('ADMIN')"))
+    @PreAuthorize("hasRole('ADMIN')")
     public int countNotApprovedRecipes(){
         int count= RecipeRepository.countNotApprovedRecipes();
         if (count < 0) {

@@ -68,10 +68,18 @@ public class SubCategoryController {
         return response;
     }
 
-//    @DeleteMapping("/deleteSubCategory/{id}")
-//    public ApiResponse<String> deleteSubCategory(@PathVariable String id){
-//        ApiResponse<String> response = new ApiResponse<>();
-//        response.setResult(service.deleteSubCategory(id));
-//        return response;
-//    }
+    @DeleteMapping("/deleteSubCategory/{id}")
+    public ApiResponse<String> deleteSubCategory(@PathVariable String id){
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setResult(service.deleteSubCategory(id));
+        return response;
+    }
+
+    @GetMapping("/countAllSubCategory")
+    public ApiResponse<Integer> countAllSubCategory(){
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("get all sub category");
+        response.setResult(service.countAllSubCategories());
+        return response;
+    }
 }
