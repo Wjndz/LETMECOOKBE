@@ -5,7 +5,6 @@ import com.example.letmecookbe.dto.request.RecipeUpdateRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.RecipeResponse;
 import com.example.letmecookbe.service.RecipeService;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -140,12 +139,12 @@ public class RecipeController {
         return response;
     }
 
-    @DeleteMapping("/deleteRecipe/{id}")
-    public ApiResponse<String> deleteRecipe(@PathVariable String id){
-        ApiResponse<String> response = new ApiResponse<>();
-        response.setResult(recipeService.deleteRecipe(id));
-        return response;
-    }
+//    @DeleteMapping("/deleteRecipe/{id}")
+//    public ApiResponse<String> deleteRecipe(@PathVariable String id){
+//        ApiResponse<String> response = new ApiResponse<>();
+//        response.setResult(recipeService.deleteRecipe(id));
+//        return response;
+//    }
 
     @GetMapping("/getTop5Recipe")
     public ApiResponse<List<RecipeResponse>> getTop5Recipe(){
@@ -168,14 +167,6 @@ public class RecipeController {
         ApiResponse<Integer> response = new ApiResponse<>();
         response.setMessage("Get Total Recipe");
         response.setResult(recipeService.countRecipeBySubCategoryId());
-        return response;
-    }
-
-    @GetMapping("/count/{accountId}")
-    public ApiResponse<Integer> getRecipeCountByUser(@PathVariable String accountId) {
-        ApiResponse<Integer> response = new ApiResponse<>();
-        response.setMessage("Get Recipe Count for User: " + accountId);
-        response.setResult(recipeService.countRecipeByUserId(accountId));
         return response;
     }
 

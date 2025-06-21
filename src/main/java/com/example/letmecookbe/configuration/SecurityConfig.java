@@ -29,8 +29,9 @@ public class SecurityConfig {
             "/accounts/send-code",
             "/accounts",
             "/accounts/request-password-reset",
-            "/accounts/reset-password",
-            "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google",
+            "/accounts/reset-password","/accounts/check-status",
+            "/auth/token","/auth/introspect","auth/logout","auth/refresh","/auth/google","auth/setup-token",
+            "/user-info",
             "/findByKeyWord/**",
     };
 
@@ -64,10 +65,12 @@ public class SecurityConfig {
         // Ghi rõ localhost thay vì "*"
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:8081",
+                "http://192.168.1.5:8081"
+
         ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 

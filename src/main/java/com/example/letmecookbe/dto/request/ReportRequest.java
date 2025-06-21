@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,5 +22,6 @@ public class ReportRequest {
     @NotBlank(message = "Lý do báo cáo không được để trống")
     @Size(max = 500, message = "Lý do báo cáo không được vượt quá 500 ký tự")
     private String reason;
-
+    private String description;
+    MultipartFile evidenceImage;
 }

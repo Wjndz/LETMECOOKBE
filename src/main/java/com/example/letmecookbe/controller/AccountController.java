@@ -3,8 +3,10 @@ package com.example.letmecookbe.controller;
 import com.example.letmecookbe.dto.request.AccountCreationRequest;
 import com.example.letmecookbe.dto.request.ResetPasswordRequest;
 import com.example.letmecookbe.dto.response.AccountResponse;
+import com.example.letmecookbe.dto.response.AccountStatusResponse;
 import com.example.letmecookbe.dto.response.ApiResponse;
 import com.example.letmecookbe.dto.response.EmailResponse;
+import com.example.letmecookbe.enums.AccountStatus;
 import com.example.letmecookbe.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -59,18 +61,13 @@ public class AccountController {
                 return ApiResponse.<String>builder()
                         .message("Tài khoản với id [" + accountId + "] đã bị ban " + days + " ngày")
                         .build();
-            case "ban-permanent":
-                accountService.banAccountPermanently(accountId);
-                return ApiResponse.<String>builder()
-                        .message("Tài khoản với id [" + accountId + "] đã bị ban vĩnh viễn")
-                        .build();
             case "activate":
                 accountService.activateAccount(accountId);
                 return ApiResponse.<String>builder()
                         .message("Tài khoản với id [" + accountId + "] đã được kích hoạt lại")
                         .build();
             default:
-                throw new IllegalArgumentException("Invalid action. Supported actions: ban, ban-permanent, activate");
+                throw new IllegalArgumentException("Invalid action. Supported actions: ban, activate");
         }
     }
 
@@ -91,7 +88,7 @@ public class AccountController {
     }
 
     @GetMapping
-    public ApiResponse<Page<AccountResponse>> getAllAccounts(@PageableDefault(size = 3, page = 0) Pageable pageable) {
+    public ApiResponse<Page<AccountResponse>> getAllAccounts(@PageableDefault(size = 3 , page = 0) Pageable pageable) {
         Page<AccountResponse> result = accountService.getAllAccounts(pageable);
         return ApiResponse.<Page<AccountResponse>>builder()
                 .result(result)
@@ -119,6 +116,13 @@ public class AccountController {
         List<EmailResponse> result = accountService.searchByEmail(keyword);
         return ApiResponse.<List<EmailResponse>>builder()
                 .result(result)
+                .build();
+    }
+
+    @GetMapping("/check-status")
+    public ApiResponse<AccountStatusResponse> checkAccountStatus(@RequestParam String email) {
+        return ApiResponse.<AccountStatusResponse>builder()
+                .result(accountService.checkAccountStatus(email))
                 .build();
     }
 }

@@ -14,6 +14,7 @@ import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.repository.AccountRepository;
 import com.example.letmecookbe.repository.InvalidatedTokenRepository;
+import com.example.letmecookbe.repository.UserInfoRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -47,6 +48,7 @@ import java.util.*;
 public class AuthService {
     AccountRepository accountRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    UserInfoRepository userInfoRepository;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -80,6 +82,75 @@ public class AuthService {
                 .build();
     }
 
+    //  NEW METHOD - Authenticate without UserInfo check
+    public AuthResponse authenticateForSetup(AuthRequest request) {
+        String email = request.getEmail().trim();
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        var account = accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+
+        // Kiểm tra trạng thái tài khoản
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null) {
+                if (account.getBanEndDate().isBefore(LocalDateTime.now())) {
+                    account.setStatus(AccountStatus.ACTIVE);
+                    account.setBanEndDate(null);
+                    accountRepository.save(account);
+                } else {
+                    throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                }
+            } else {
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
+            }
+        }
+
+        //  SKIP UserInfo check for setup flow
+
+        boolean authenticated = passwordEncoder.matches(request.getPassword(), account.getPassword());
+
+        if (!authenticated) {
+            log.debug("Authentication failed for email [{}]", email);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        var token = generateSetupToken(account);
+        var refreshToken = generateToken(account, true); // Keep existing refresh token
+
+        return AuthResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .authenticated(true)
+                .build();
+    }
+
+    private String generateSetupToken(Account account) {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(account.getId()) // ✅ USE ACCOUNT ID instead of email
+                .issuer("letmecook.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
+                ))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("email", account.getEmail()) // ✅ Email as claim
+                .claim("scope", "SETUP") // ✅ Setup scope
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            log.error("Cannot create setup token", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public AuthResponse authenticate(AuthRequest request) {
         String email = request.getEmail().trim();
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
@@ -87,21 +158,27 @@ public class AuthService {
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
-                account.setStatus(AccountStatus.ACTIVE);
-                account.setBanEndDate(null);
-                accountRepository.save(account);
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null) {
+                if (account.getBanEndDate().isBefore(LocalDateTime.now())) {
+                    account.setStatus(AccountStatus.ACTIVE);
+                    account.setBanEndDate(null);
+                    accountRepository.save(account);
+                } else {
+                    long daysRemaining = ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
+                    throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                }
             } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
-                throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
+        }
+
+        // Kiểm tra xem UserInfo đã được tạo chưa
+        boolean hasUserInfo = userInfoRepository.findByAccountId(account.getId()).isPresent();
+        if (!hasUserInfo) {
+            throw new AppException(ErrorCode.USER_INFO_NOT_EXISTED);
         }
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), account.getPassword());
@@ -119,7 +196,13 @@ public class AuthService {
                 .authenticated(true)
                 .build();
     }
-
+    public Account getCurrentAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // ... logic lấy identifier từ authentication ...
+        String email = authentication.getName(); // Ví dụ đơn giản, có thể phức tạp hơn với JWT
+        return accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
     public AuthResponse googleSignIn(GoogleSignInRequest request) throws Exception {
         // Xác minh ID Token từ Google
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
@@ -151,21 +234,24 @@ public class AuthService {
                 });
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null && account.getBanEndDate().isBefore(LocalDateTime.now())) {
                 account.setStatus(AccountStatus.ACTIVE);
                 account.setBanEndDate(null);
                 accountRepository.save(account);
-            } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+            } else if (account.getBanEndDate() != null) {
                 throw new AppException(ErrorCode.ACCOUNT_BANNED);
+            } else {
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
+        }
+
+        // Kiểm tra xem UserInfo đã được tạo chưa
+        boolean hasUserInfo = userInfoRepository.findByAccountId(account.getId()).isPresent();
+        if (!hasUserInfo) {
+            throw new AppException(ErrorCode.USER_INFO_NOT_EXISTED);
         }
 
         // Tạo JWT token cho người dùng
@@ -202,25 +288,27 @@ public class AuthService {
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         // Kiểm tra trạng thái tài khoản
-        if (account.getStatus() == AccountStatus.BANNED || account.getStatus() == AccountStatus.BANNED_PERMANENT) {
-            if (account.getStatus() == AccountStatus.BANNED && account.getBanEndDate() != null &&
-                    account.getBanEndDate().isBefore(LocalDateTime.now())) {
+        if (account.getStatus() == AccountStatus.BANNED) {
+            if (account.getBanEndDate() != null && account.getBanEndDate().isBefore(LocalDateTime.now())) {
                 account.setStatus(AccountStatus.ACTIVE);
                 account.setBanEndDate(null);
                 accountRepository.save(account);
-            } else {
-                long daysRemaining = account.getStatus() == AccountStatus.BANNED_PERMANENT
-                        ? -1
-                        : ChronoUnit.DAYS.between(LocalDateTime.now(), account.getBanEndDate());
-                String message = daysRemaining == -1
-                        ? "Tài khoản bị ban vĩnh viễn"
-                        : "Tài khoản bị ban " + daysRemaining + " ngày";
+            } else if (account.getBanEndDate() != null) {
                 throw new AppException(ErrorCode.ACCOUNT_BANNED);
+            } else {
+                // If banEndDate is null, treat as not banned
+                account.setStatus(AccountStatus.ACTIVE);
+                accountRepository.save(account);
             }
         }
 
         var token = generateToken(account, false);
 
+        // Kiểm tra xem UserInfo đã được tạo chưa
+        boolean hasUserInfo = userInfoRepository.findByAccountId(account.getId()).isPresent();
+        if (!hasUserInfo) {
+            throw new AppException(ErrorCode.USER_INFO_NOT_EXISTED);
+        }
 
         return AuthResponse.builder()
                 .token(token)
@@ -299,12 +387,5 @@ public class AuthService {
         return stringJoiner.toString();
     }
 
-    public Account getCurrentAccount() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // ... logic lấy identifier từ authentication ...
-        String email = authentication.getName(); // Ví dụ đơn giản, có thể phức tạp hơn với JWT
-        return accountRepository.findAccountByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-    }
 
 }
