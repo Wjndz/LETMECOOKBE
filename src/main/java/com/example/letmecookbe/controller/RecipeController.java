@@ -140,7 +140,7 @@ public class RecipeController {
         return response;
     }
 
-    @GetMapping("/getTop5Recipe")
+    @GetMapping("/getTop5Recipes")
     public ApiResponse<List<RecipeResponse>> getTop5Recipe(){
         ApiResponse<List<RecipeResponse>> response= new ApiResponse<>();
         response.setMessage("Top 5 recipe: ");

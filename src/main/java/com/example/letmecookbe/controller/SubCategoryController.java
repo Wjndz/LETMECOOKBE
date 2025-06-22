@@ -90,4 +90,12 @@ public class SubCategoryController {
         response.setResult(service.getAllSubCategory());
         return response;
     }
+
+    @GetMapping("/getTop6SubCategory")
+    public ApiResponse<List<SubCategoryResponse>> getTop6SubCategory(){
+        ApiResponse<List<SubCategoryResponse>> response = new ApiResponse<>();
+        response.setMessage("Get top 6 Sub Categories: ");
+        response.setResult(service.getTop6SubCategoriesByRecipeCount());
+        return response;
+    }
 }

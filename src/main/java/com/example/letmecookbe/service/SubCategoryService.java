@@ -13,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -116,4 +118,15 @@ public class SubCategoryService {
                 .map(subCategoryMapper::toSubCategoryResponse)
                 .collect(Collectors.toList());
     }
+
+    @PreAuthorize("hasAuthority('GET_TOP_6_SUB_CATEGORY')")
+    public List<SubCategoryResponse> getTop6SubCategoriesByRecipeCount() {
+        Pageable pageable = PageRequest.of(0, 6);
+        List<SubCategory> topSubCategories = SubRepository.findTop6SubCategoriesByRecipeCount(pageable);
+
+        return topSubCategories.stream()
+                .map(subCategoryMapper::toSubCategoryResponse)
+                .collect(Collectors.toList());
+    }
+
 }
