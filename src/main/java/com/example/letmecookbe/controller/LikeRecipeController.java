@@ -26,7 +26,7 @@ public class LikeRecipeController {
         return response;
     }
 
-    @PostMapping("/dislike/{id}")
+    @DeleteMapping("/dislike/{id}")
     public ApiResponse<String> dislikeRecipe(@PathVariable String id){
         ApiResponse<String> response = new ApiResponse<>();
         response.setMessage("Dislike Recipe: "+ id);

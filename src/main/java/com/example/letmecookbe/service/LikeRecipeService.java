@@ -68,6 +68,7 @@ public class LikeRecipeService {
                 .toList();
     }
 
+    @Transactional
     @PreAuthorize("hasAuthority('DISLIKE')")
     public String disLike(String id) {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
