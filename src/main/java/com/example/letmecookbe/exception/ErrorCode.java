@@ -76,6 +76,8 @@ public enum ErrorCode {
     RECIPE_STEPS_EXISTED(1049,"Recipe steps already exists", HttpStatus.CONFLICT),
     FAVOURITE_RECIPE_NOT_EXISTED(1050,"Favourite recipe not found", HttpStatus.NOT_FOUND),
     FAVOURITE_RECIPE_EXISTED(1051,"Favourite recipe already exists", HttpStatus.CONFLICT),
+    LIKE_RECIPE_EXISTED(1052,"Like recipe already exists", HttpStatus.CONFLICT),
+    LIKE_RECIPE_NOT_EXISTED(1053,"Like recipe not found", HttpStatus.NOT_FOUND),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.SERVICE_UNAVAILABLE),
     INVALID_GOOGLE_TOKEN(8887, "Invalid Google token", HttpStatus.UNAUTHORIZED),
     INVALID_INPUT(8886, "Invalid input", HttpStatus.BAD_REQUEST),

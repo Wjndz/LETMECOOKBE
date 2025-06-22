@@ -131,13 +131,7 @@ public class RecipeController {
         return response;
     }
 
-    @PostMapping("/like/{id}")
-    public ApiResponse<RecipeResponse> likeRecipe(@PathVariable String id){
-        ApiResponse<RecipeResponse> response = new ApiResponse<>();
-        response.setMessage("Like Recipe: "+ id);
-        response.setResult(recipeService.Like(id));
-        return response;
-    }
+
 
     @DeleteMapping("/deleteRecipe/{id}")
     public ApiResponse<String> deleteRecipe(@PathVariable String id){

@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FavouriteRecipeResponse {
+    String id;
     String recipeId;
     String accountId;
     String recipeName;

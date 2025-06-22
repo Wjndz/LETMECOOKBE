@@ -69,6 +69,7 @@ public class FavouriteRecipeService {
     }
 
 
+    @Transactional
     @PreAuthorize("hasAuthority('DELETE_FAVOURITE_RECIPE')")
     public String deleteFavouriteRecipe(String recipeId) {
         if (!recipeRepository.existsById(recipeId)) {

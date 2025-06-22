@@ -12,5 +12,6 @@ public interface FavouriteRecipeMapper {
 
     @Mapping(source = "recipe.title",target = "recipeName")
     @Mapping(source = "account.username",target ="accountName")
+    @Mapping(source = "recipe.id",target = "recipeId")
     FavouriteRecipeResponse toFavouriteRecipeResponse(FavouriteRecipe favouriteRecipe);
 }

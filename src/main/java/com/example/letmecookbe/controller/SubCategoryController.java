@@ -82,4 +82,12 @@ public class SubCategoryController {
         response.setResult(service.countAllSubCategories());
         return response;
     }
+
+    @GetMapping("/getAllSubCategory")
+    public ApiResponse<List<SubCategoryResponse>> getAllSubCategory(){
+        ApiResponse<List<SubCategoryResponse>> response = new ApiResponse<>();
+        response.setMessage("Get all Sub Categories: ");
+        response.setResult(service.getAllSubCategory());
+        return response;
+    }
 }

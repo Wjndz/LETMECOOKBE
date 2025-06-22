@@ -17,7 +17,7 @@ public class RecipeResponse {
     String title;
     String description;
     String cookingTime;
-    String totalLikes;
+    int totalLikes;
     String difficulty;
     String status;
     String image;

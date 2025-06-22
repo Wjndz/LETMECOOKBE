@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,4 +107,13 @@ public class SubCategoryService {
         return count;
     }
 
+    @PreAuthorize("hasAuthority('GET_ALL_SUB_CATEGORY')")
+    public List<SubCategoryResponse> getAllSubCategory(){
+        List<SubCategory> subCategories = SubRepository.findAll();
+        if(subCategories.isEmpty())
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        return subCategories.stream()
+                .map(subCategoryMapper::toSubCategoryResponse)
+                .collect(Collectors.toList());
+    }
 }

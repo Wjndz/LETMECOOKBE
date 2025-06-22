@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class RecipeService {
     SubCategoryRepository subCategoryRepository;
     AccountRepository accountRepository;
     RecipeDeletionService recipeDeletionService;
+
     private final FileStorageService fileStorageService;
 
     private String getAccountIdFromContext() {
@@ -164,25 +166,6 @@ public class RecipeService {
 
     }
 
-    @PreAuthorize("hasAuthority('LIKE')")
-    public RecipeResponse Like(String id) {
-        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
-                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
-        );
-
-        recipe.setTotalLikes(recipe.getTotalLikes() + 1);
-        Recipe updatedRecipe = RecipeRepository.save(recipe);
-        return recipeMapper.toRecipeResponse(updatedRecipe);
-    }
-
-//    public RecipeResponse disLike(String id) {
-//        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
-//                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
-//        );
-//        recipe.setTotalLikes(recipe.getTotalLikes() - 1);
-//        Recipe updatedRecipe = RecipeRepository.save(recipe);
-//        return recipeMapper.toRecipeResponse(updatedRecipe);
-//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     public RecipeResponse changeStatusToApprove(String id){
