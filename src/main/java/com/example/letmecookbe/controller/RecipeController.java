@@ -227,4 +227,6 @@ public class RecipeController {
         response.setResult(recipeService.getNewRecipeInMonth());
         return response;
     }
+
+
 }
