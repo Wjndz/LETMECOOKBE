@@ -211,4 +211,20 @@ public class RecipeController {
         response.setResult(recipeService.countNotApprovedRecipes());
         return response;
     }
+
+    @GetMapping("/trendingRecipe")
+    public ApiResponse<List<RecipeResponse>> getTrendingRecipe(){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+        response.setMessage("Get Trending Recipe");
+        response.setResult(recipeService.getTrendingRecipes());
+        return response;
+    }
+
+    @GetMapping("/newRecipeInMonth")
+    public ApiResponse<List<RecipeResponse>> getNewRecipeInMonth(){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+        response.setMessage("Get New Recipe In Month");
+        response.setResult(recipeService.getNewRecipeInMonth());
+        return response;
+    }
 }
