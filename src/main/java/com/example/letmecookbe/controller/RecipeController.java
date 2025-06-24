@@ -228,5 +228,11 @@ public class RecipeController {
         return response;
     }
 
-
+    @GetMapping("/getFavouriteRecipeByAccount")
+    public ApiResponse<List<RecipeResponse>> getFavouriteRecipeByAccount(){
+        ApiResponse<List<RecipeResponse>> response = new ApiResponse<>();
+        response.setMessage("Get Favourite Recipe By Account");
+        response.setResult(recipeService.getFavouriteRecipeByAccountId());
+        return response;
+    }
 }

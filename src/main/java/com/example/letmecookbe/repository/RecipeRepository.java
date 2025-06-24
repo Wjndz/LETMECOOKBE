@@ -84,4 +84,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
     @Query("SELECT COUNT(r) FROM Recipe r WHERE MONTH(r.createAt) = MONTH(CURRENT_DATE) AND YEAR(r.createAt) = YEAR(CURRENT_DATE) AND r.status = 'APPROVED'")
     long countThisMonthRecipes();
 
+    @Query("SELECT f.recipe FROM FavouriteRecipe f WHERE f.account.id = :accountId")
+    List<Recipe> findFavouriteRecipesByAccountId(String accountId);
+
 }

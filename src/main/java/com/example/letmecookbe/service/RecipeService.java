@@ -300,4 +300,12 @@ public class RecipeService {
                   .collect(Collectors.toList());
       }
     }
+
+    @PreAuthorize("hasAuthority('FAVOURITE_RECIPE_BY_ACCOUNT')")
+    public List<RecipeResponse> getFavouriteRecipeByAccountId(){
+        List<Recipe> favouriteRecipes = RecipeRepository.findFavouriteRecipesByAccountId(getAccountIdFromContext());
+        return favouriteRecipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
 }
