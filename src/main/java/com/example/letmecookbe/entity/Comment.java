@@ -25,6 +25,7 @@ public class Comment {
     @JoinColumn(name = "recipe_id", referencedColumnName = "id") // RecipeID là khóa ngoại tới Recipe
     Recipe recipe;
     LocalDateTime createdAt;
+    int like;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false) // Đảm bảo cột status không null
     CommentStatus status;

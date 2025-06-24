@@ -5,6 +5,7 @@ import com.example.letmecookbe.dto.response.CommentResponse;
 import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.Comment;
 import com.example.letmecookbe.entity.Recipe;
+import com.example.letmecookbe.enums.NotificationType;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.CommentMapper;
@@ -34,7 +35,7 @@ import jakarta.persistence.criteria.Predicate;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CommentService {
-
+    NotificationService notificationService;
     CommentRepository commentRepository;
     CommentMapper commentMapper;
     AccountRepository accountRepository;
@@ -47,19 +48,53 @@ public class CommentService {
         var context = SecurityContextHolder.getContext();
         String userEmail = context.getAuthentication().getName();
 
-        Account account = accountRepository.findAccountByEmail(userEmail)
+        Account commenter = accountRepository.findAccountByEmail(userEmail)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
 
         Comment comment = commentMapper.toComment(request);
-        comment.setAccount(account);
+        comment.setAccount(commenter);
         comment.setRecipe(recipe);
         comment.setStatus(CommentStatus.APPROVED);
         comment = commentRepository.save(comment);
+
+        // ✅ Gửi thông báo đến chủ bài viết
+        Account recipeOwner = recipe.getAccount();
+        if (!recipeOwner.getEmail().equalsIgnoreCase(commenter.getEmail())) {
+            String title = "💬 Có bình luận mới";
+            String content = commenter.getUsername() + " vừa bình luận công thức của bạn: " + recipe.getTitle();
+
+            notificationService.createTypedNotification(
+                    commenter,
+                    recipeOwner,
+                    NotificationType.COMMENT, // 👈 Xác định rõ loại thông báo
+                    title,
+                    content
+            );
+
+        }
+
+        // ✅ Gửi thông báo đến tất cả Admin
+        List<Account> adminAccounts = accountRepository.findAllByRoles_Name("ADMIN");
+        for (Account admin : adminAccounts) {
+            String title = "📢 Bình luận mới vừa được đăng";
+            String content = "Người dùng " + commenter.getUsername() + " đã bình luận công thức: " + recipe.getTitle();
+
+            notificationService.createTypedNotification(
+                    commenter,
+                    admin,
+                    NotificationType.COMMENT, // 👈 Loại thông báo là COMMENT
+                    title,
+                    content
+            );
+        }
+
+
         return commentMapper.toCommentResponse(comment);
     }
+
 
     // --- 2. Chỉnh sửa Comment ---
     @PreAuthorize("hasAuthority('UPDATE_COMMENT')")
