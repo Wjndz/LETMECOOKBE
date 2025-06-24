@@ -2,17 +2,12 @@ package com.example.letmecookbe.service;
 
 import com.example.letmecookbe.dto.request.CommentRequest;
 import com.example.letmecookbe.dto.response.CommentResponse;
-import com.example.letmecookbe.entity.Account;
-import com.example.letmecookbe.entity.Comment;
-import com.example.letmecookbe.entity.Recipe;
+import com.example.letmecookbe.entity.*;
 import com.example.letmecookbe.enums.NotificationType;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.CommentMapper;
-import com.example.letmecookbe.repository.AccountRepository;
-import com.example.letmecookbe.repository.CommentRepository;
-import com.example.letmecookbe.repository.RecipeRepository;
-import com.example.letmecookbe.repository.ReportRepository; // THÊM IMPORT NÀY
+import com.example.letmecookbe.repository.*;
 import com.example.letmecookbe.enums.ReportType; // THÊM IMPORT NÀY (giả sử bạn có enum ReportType)
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +23,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
+
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
 
@@ -40,6 +37,8 @@ public class CommentService {
     CommentMapper commentMapper;
     AccountRepository accountRepository;
     RecipeRepository recipeRepository;
+    UserInfoRepository userInfoRepository;
+    LikeCommentRepository likedCommentRepository;
     private final ReportRepository reportRepository; // THÊM DÒNG NÀY ĐỂ INJECT ReportRepository
 
     // --- 1. Tạo Comment ---
@@ -53,10 +52,12 @@ public class CommentService {
 
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new AppException(ErrorCode.RECIPE_NOT_FOUND));
+        UserInfo info = userInfoRepository.findByEmail(commenter.getEmail());
 
         Comment comment = commentMapper.toComment(request);
         comment.setAccount(commenter);
         comment.setRecipe(recipe);
+        comment.setUserInfo(info);
         comment.setStatus(CommentStatus.APPROVED);
         comment = commentRepository.save(comment);
 
@@ -121,9 +122,12 @@ public class CommentService {
     // --- 3. Xóa Comment ---
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteComment(String commentId) {
+        LikeComment likeComment = likedCommentRepository.findByCommentId(commentId);
+        likedCommentRepository.delete(likeComment);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
         commentRepository.delete(comment);
+
     }
 
 

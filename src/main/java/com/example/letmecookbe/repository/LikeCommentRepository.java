@@ -13,5 +13,9 @@ public interface LikeCommentRepository extends JpaRepository<LikeComment, String
 
     void deleteByCommentIdAndAccountId(String commentId, String accountId);
 
-    List<LikeComment> getAllLikeCommentByAccountIdAndCommentId(String accountId, String commentId);
+    List<LikeComment> findAllByAccountId(String accountId);
+
+    void deleteByCommentId(String commentId);
+
+    LikeComment findByCommentId(String commentId);
 }

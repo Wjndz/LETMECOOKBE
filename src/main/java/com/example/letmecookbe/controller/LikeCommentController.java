@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/likeComment")
 @RequiredArgsConstructor
@@ -23,6 +25,14 @@ public class LikeCommentController {
         ApiResponse<LikeCommentResponse> response = new ApiResponse<>();
         response.setMessage("Create Like Comment");
         response.setResult(likeCommentService.createLikeComment(commentId,request));
+        return response;
+    }
+
+    @GetMapping("/getAll")
+    public ApiResponse<List<LikeCommentResponse>> getAllLikeComment(){
+        ApiResponse<List<LikeCommentResponse>> response = new ApiResponse<>();
+        response.setMessage("Get all like comment by comment id: ");
+        response.setResult(likeCommentService.getAllLikeCommentByAccountId());
         return response;
     }
 

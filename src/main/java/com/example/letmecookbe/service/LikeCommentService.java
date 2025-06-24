@@ -48,10 +48,10 @@ public class LikeCommentService {
         Account account = accountRepository.findById(getAccountIdFromContext()).orElseThrow(
                 () -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND)
         );
-        if (likeCommentRepository.existsByCommentIdAndAccountId(getAccountIdFromContext(), commentId)) {
+        if (likeCommentRepository.existsByCommentIdAndAccountId(commentId,getAccountIdFromContext())) {
             throw new AppException(ErrorCode.LIKE_COMMENT_EXISTED);
         }
-        comment.setLike(comment.getLike() + 1);
+        comment.setLikes(comment.getLikes() + 1);
         commentRepository.save(comment);
         LikeComment likeComment = likeCommentMapper.toLikeComment(request);
         likeComment.setAccount(account);
@@ -60,13 +60,21 @@ public class LikeCommentService {
         return likeCommentMapper.toLikeCommentResponse(savedLikeComment);
     }
 
+    @PreAuthorize("hasAuthority('GET_ALL_COMMENT_LIKE_BY_ACCOUNT')")
+    public List<LikeCommentResponse> getAllLikeCommentByAccountId(){
+        List<LikeComment> likeComments = likeCommentRepository.findAllByAccountId(getAccountIdFromContext());
+        return likeComments.stream()
+                .map(likeCommentMapper::toLikeCommentResponse)
+                .toList();
+    }
+
     @Transactional
     @PreAuthorize("hasAuthority('DISLIKE_COMMENT')")
     public String disLikeComment(String id) {
         Comment comment = commentRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.COMMENT_NOT_FOUND)
         );
-        comment.setLike(comment.getLike() - 1);
+        comment.setLikes(comment.getLikes() - 1);
         commentRepository.save(comment);
         likeCommentRepository.deleteByCommentIdAndAccountId(id, getAccountIdFromContext());
         return id;

@@ -139,7 +139,7 @@ public class RecipeService {
         return recipePage.map(recipeMapper::toRecipeResponse);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('COUNT_REICPE_BY_ACCOUNT')")
     public List<RecipeResponse> getRecipeByAccountId(){
         List<Recipe> accountRecipes = RecipeRepository.findRecipeByAccountId(getAccountIdFromContext());
         if (accountRecipes.isEmpty()) {
