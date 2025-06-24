@@ -15,7 +15,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, String> {
     @Query("select c from Recipe c where c.subCategory.id = :subCategoryId")
     List<Recipe> findRecipeBySubCategoryId(String subCategoryId);
 
-    @Query("select c from Recipe c where c.title LIKE %:KeyWord% or c.subCategory.subCategoryName LIKE %:KeyWord%")
+    @Query("select c from Recipe c where c.title LIKE %:KeyWord%")
     List<Recipe> findRecipeByKeyword(String KeyWord);
 
     @Query("select c from Recipe c where c.account.id = :accountId")
