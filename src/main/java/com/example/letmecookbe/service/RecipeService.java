@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -369,5 +370,39 @@ public class RecipeService {
             throw new AppException(ErrorCode.LIST_EMPTY);
         }
         return count;
+    }
+
+    @PreAuthorize("hasAuthority('TRENDING_RECIPE')")
+    public List<RecipeResponse> getTrendingRecipes(){
+        LocalDateTime lastWeek = LocalDateTime.now().minusWeeks(1); //trong khoảng 2 tuần
+        List<Recipe> recipeList = RecipeRepository.findTrendingFavoriteRecipes(lastWeek);
+        return recipeList.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasAuthority('NEW_RECIPE_IN_MONTH')")
+    public List<RecipeResponse> getNewRecipeInMonth(){
+        long thisMonthCount = RecipeRepository.countThisMonthRecipes();
+        if(thisMonthCount > 0){
+            List<Recipe> recipeList = RecipeRepository.findThisMonthRecipes();
+            return recipeList.stream()
+                    .map(recipeMapper::toRecipeResponse)
+                    .collect(Collectors.toList());
+        }else{
+            LocalDateTime threeMonthsAgo = LocalDateTime.now().minusMonths(3);
+            List<Recipe> recipeList = RecipeRepository.findRecipesInLastMonths(threeMonthsAgo);
+            return recipeList.stream()
+                    .map(recipeMapper::toRecipeResponse)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @PreAuthorize("hasAuthority('FAVOURITE_RECIPE_BY_ACCOUNT')")
+    public List<RecipeResponse> getFavouriteRecipeByAccountId(){
+        List<Recipe> favouriteRecipes = RecipeRepository.findFavouriteRecipesByAccountId(getAccountIdFromContext());
+        return favouriteRecipes.stream()
+                .map(recipeMapper::toRecipeResponse)
+                .collect(Collectors.toList());
     }
 }

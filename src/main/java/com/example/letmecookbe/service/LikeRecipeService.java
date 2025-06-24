@@ -74,9 +74,6 @@ public class LikeRecipeService {
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
-        Account account = accountRepository.findById(getAccountIdFromContext()).orElseThrow(
-                ()->new AppException(ErrorCode.ACCOUNT_NOT_FOUND)
-        );
         recipe.setTotalLikes(recipe.getTotalLikes() - 1);
         RecipeRepository.save(recipe);
         likeRecipeRepository.deleteByRecipeIdAndAccountId(id, getAccountIdFromContext());
