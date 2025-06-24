@@ -8,6 +8,7 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
+
     EMAIL_EXISTED(1001, "Email already exists", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1002, "User not exists", HttpStatus.NOT_FOUND),
     OTP_INCORRECT(1003, "OTP incorrect", HttpStatus.BAD_REQUEST),
@@ -89,6 +90,8 @@ public enum ErrorCode {
     INVALID_KEY(8888, "Invalid key", HttpStatus.BAD_REQUEST),
     INVALID_COMMENT_STATUS(8889, "Invalid comment status", HttpStatus.BAD_REQUEST),
     getEvidenceImage(8889, "Evidence image", HttpStatus.BAD_REQUEST),
+    DATABASE_ERROR(8889, "Database error", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_RECIPE_STATUS(8889, "Invalid recipe status", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

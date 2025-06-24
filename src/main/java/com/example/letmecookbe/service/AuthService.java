@@ -322,6 +322,7 @@ public class AuthService {
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(account.getEmail())
+                .claim("id", account.getId().toString())
                 .issuer("letmecook.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
