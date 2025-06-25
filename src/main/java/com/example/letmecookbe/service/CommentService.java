@@ -42,6 +42,14 @@ public class CommentService {
     LikeCommentRepository likedCommentRepository;
     private final ReportRepository reportRepository; // THÊM DÒNG NÀY ĐỂ INJECT ReportRepository
 
+    private String getAccountIdFromContext() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+        Account account = accountRepository.findAccountByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        return account.getId();
+    }
+
     // --- 1. Tạo Comment ---
     @PreAuthorize("hasAuthority('CREATE_COMMENT')")
     public CommentResponse createComment(String recipeId, CommentRequest request) {
@@ -122,13 +130,22 @@ public class CommentService {
 
     // --- 3. Xóa Comment ---
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('DELETE_COMMENT')")
     public void deleteComment(String commentId) {
         LikeComment likeComment = likedCommentRepository.findByCommentId(commentId);
         likedCommentRepository.delete(likeComment);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
         commentRepository.delete(comment);
+    }
+
+    @PreAuthorize("hasAuthority('GET_COMMENT_BY_ACCOUNT_ID')")
+    public Page<CommentResponse> getCommentsByAccountId(Pageable pageable) {
+        Page<Comment> comments = commentRepository.findByAccountId(getAccountIdFromContext(), pageable);
+        if (comments.isEmpty()) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return comments.map(commentMapper::toCommentResponse);
     }
 
 
@@ -152,7 +169,7 @@ public class CommentService {
     }
 
     // --- 6. Xem tất cả Comment (có phân trang) ---
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('GET_ALL_COMMENT')")
     public Page<CommentResponse> getAllComments(Pageable pageable,
                                                 String searchTerm,
                                                 String recipeId,

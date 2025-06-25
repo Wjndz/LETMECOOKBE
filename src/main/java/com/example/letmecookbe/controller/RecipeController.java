@@ -106,6 +106,14 @@ public class RecipeController {
         return response;
     }
 
+    @GetMapping("/getRecipeById/{id}")
+    public ApiResponse<RecipeResponse> getRecipeById(@PathVariable String id){
+        ApiResponse<RecipeResponse> response = new ApiResponse<>();
+        response.setMessage("Get Recipe by ID");
+        response.setResult(recipeService.getRecipeById(id));
+        return response;
+    }
+
     @PostMapping("/changeStatus/{id}")
     public ApiResponse<RecipeResponse> changeStatus(@PathVariable String id){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();

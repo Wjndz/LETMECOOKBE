@@ -24,5 +24,7 @@ public interface CommentRepository extends JpaRepository<Comment, String>, JpaSp
     @Query("DELETE FROM Comment c WHERE c.recipe.id = :recipeId")
     void deleteByRecipeId(String recipeId);
 
+    Page<Comment> findByAccountId(String accountId, Pageable pageable);
+
     List<Comment> findByRecipeId(String recipeId);
 }

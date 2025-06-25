@@ -14,6 +14,7 @@ public interface CommentMapper {
     @Mapping(source = "recipe.title", target = "recipeTitle")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "userInfo.avatar", target = "userAvatar")
+    @Mapping(source = "recipe.img", target = "recipeImage")
     CommentResponse toCommentResponse(Comment comment);
 
 

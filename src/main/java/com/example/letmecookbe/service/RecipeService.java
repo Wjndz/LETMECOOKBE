@@ -150,6 +150,15 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasAuthority('GET_RECIPE_BY_RECIPE_ID')")
+    public RecipeResponse getRecipeById(String id){
+        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
+                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
+        );
+        return recipeMapper.toRecipeResponse(recipe);
+    }
+
+
     @PreAuthorize("hasAuthority('GET_RECIPE_BY_SUB_CATEGORY')")
     public Page<RecipeResponse> getRecipeBySubCategoryId(String id, Pageable pageable){
         if(!subCategoryRepository.existsById(id)){
