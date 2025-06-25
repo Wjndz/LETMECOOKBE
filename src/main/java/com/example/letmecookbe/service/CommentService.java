@@ -9,6 +9,7 @@ import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.CommentMapper;
 import com.example.letmecookbe.repository.*;
 import com.example.letmecookbe.enums.ReportType; // THÊM IMPORT NÀY (giả sử bạn có enum ReportType)
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -120,6 +121,7 @@ public class CommentService {
     }
 
     // --- 3. Xóa Comment ---
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteComment(String commentId) {
         LikeComment likeComment = likedCommentRepository.findByCommentId(commentId);
@@ -127,7 +129,6 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
         commentRepository.delete(comment);
-
     }
 
 

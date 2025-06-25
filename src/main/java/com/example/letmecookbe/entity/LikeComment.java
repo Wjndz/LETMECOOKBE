@@ -13,6 +13,7 @@ public class LikeComment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     @ManyToOne
     @JoinColumn(name = "comment_id", referencedColumnName = "id")
     Comment comment;
