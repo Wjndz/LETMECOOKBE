@@ -10,5 +10,7 @@ public enum NotificationType {
     SYSTEM,
     PUBLIC,
     PRIVATE,
-    REPORT
+    REPORT,
+    REPORT_RESOLVED,
+    REPORT_REJECTED
 }

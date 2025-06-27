@@ -77,18 +77,23 @@ public class RecipeService {
         );
 
 
-// Gửi cho admin
+// Gửi cho các admin khác, trừ người gửi recipe
         List<Account> admins = accountRepository.findAllByRoles_Name("ADMIN");
         for (Account admin : admins) {
+            if (admin.getId().equals(account.getId())) {
+                continue; // Bỏ qua nếu admin là người tạo công thức
+            }
+
             notificationService.createTypedNotification(
-                    account, // sender
-                    admin,   // recipient
+                    account,
+                    admin,
                     NotificationType.NEW_RECIPE,
                     "🆕 Công thức mới đang chờ duyệt",
                     "Người dùng " + account.getUsername() +
                             " vừa gửi công thức: \"" + recipe.getTitle() + "\" cần duyệt."
             );
         }
+
 
         return recipeMapper.toRecipeResponse(savedRecipe);
     }
@@ -280,14 +285,14 @@ public class RecipeService {
         Recipe updatedRecipe = RecipeRepository.save(recipe);
 
         // Gửi thông báo riêng tư khi bị từ chối
-        notificationService.sendPrivateNotificationTest(
-                recipe.getAccount().getUsername(),
-                NotificationRequest.builder()
-                        .title("❌ Công thức bị từ chối")
-                        .message("Công thức \"" + recipe.getTitle() + "\" đã bị từ chối bởi quản trị viên.")
-                        .type("RECIPE_REJECTED")
-                        .build()
+        notificationService.createTypedNotification(
+                null,
+                recipe.getAccount(),
+                NotificationType.RECIPE_REJECTED,
+                "❌ Công thức bị từ chối",
+                "Công thức \"" + recipe.getTitle() + "\" đã bị từ chối bởi quản trị viên."
         );
+
 
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }

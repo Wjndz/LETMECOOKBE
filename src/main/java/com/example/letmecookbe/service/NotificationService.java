@@ -188,36 +188,28 @@ public class NotificationService {
 
         List<Notification> allNotifications = new ArrayList<>();
 
-        // 1. Lấy thông báo riêng tư mà người dùng ĐANG ĐĂNG NHẬP là người nhận (Inbox)
+        // 1. Lấy thông báo riêng tư mà user là người nhận (Inbox)
         List<Notification> receivedPrivateNotifications =
                 notificationRepository.findByRecipientAccountOrderByDateDescTimeDesc(userAccount);
         log.info("Found {} private notifications received by user: {}", receivedPrivateNotifications.size(), emailOfCurrentUser);
         allNotifications.addAll(receivedPrivateNotifications);
 
-        // 2. Lấy thông báo riêng tư mà người dùng ĐANG ĐĂNG NHẬP là người gửi (Outbox)
-        List<Notification> sentPrivateNotifications =
-                notificationRepository.findBySenderAccountAndRecipientAccountIsNotNullOrderByDateDescTimeDesc(userAccount);
-        log.info("Found {} private notifications sent by user: {}", sentPrivateNotifications.size(), emailOfCurrentUser);
-        allNotifications.addAll(sentPrivateNotifications);
-
-        // 3. Lấy tất cả thông báo công khai
+        // 2. Lấy tất cả thông báo công khai
         List<Notification> publicNotifications =
                 notificationRepository.findByRecipientAccountIsNullOrderByDateDescTimeDesc();
         log.info("Found {} public notifications.", publicNotifications.size());
         allNotifications.addAll(publicNotifications);
 
-        // Sắp xếp lại toàn bộ danh sách theo thời gian giảm dần
+        // Sắp xếp và lọc như cũ...
         allNotifications.sort(Comparator
                 .comparing(Notification::getDate, Comparator.reverseOrder())
                 .thenComparing(Notification::getTime, Comparator.reverseOrder())
         );
 
-        // Lọc các thông báo chưa bị ẩn trước khi chuyển đổi sang DTO
         List<Notification> visibleNotifications = allNotifications.stream()
                 .filter(notification -> !notification.isDismissed())
                 .collect(Collectors.toList());
 
-        // ✅ Phân trang thủ công bằng subList (start → end)
         int start = page * size;
         int end = Math.min(start + size, visibleNotifications.size());
 
@@ -504,10 +496,14 @@ public class NotificationService {
     }
     @Transactional
     public void createTypedNotification(Account sender, Account recipient, NotificationType type, String title, String message) {
-        // Tạo entity thông báo
+        Account effectiveRecipient = recipient != null ? recipient : getCurrentUserAccount();
+        if (effectiveRecipient == null) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+
         Notification notification = new Notification();
         notification.setSenderAccount(sender);
-        notification.setRecipientAccount(recipient);
+        notification.setRecipientAccount(effectiveRecipient);
         notification.setNotificationType(type);
         notification.setTitle(title);
         notification.setContent(message);
@@ -517,23 +513,26 @@ public class NotificationService {
         LocalTime nowTime = LocalTime.now();
         notification.setDate(nowDate);
         notification.setTime(nowTime);
-        notificationRepository.save(notification);
         Notification savedNotification = notificationRepository.save(notification);
-        log.info("✅ Saved notification for recipient: {}", recipient.getEmail());
+        log.info("✅ Saved notification for recipient: email={}, username={}", effectiveRecipient.getEmail(), effectiveRecipient.getUsername());
 
-        // Chuẩn bị dữ liệu để đẩy qua WebSocket
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("id", savedNotification.getId());
         notificationData.put("type", type.name());
         notificationData.put("title", title);
         notificationData.put("message", message);
-        notificationData.put("recipientId", recipient.getId());
+        notificationData.put("recipientId", effectiveRecipient.getId()); // Thêm recipientId
+        notificationData.put("recipientUsername", effectiveRecipient.getUsername()); // Giữ username
+        notificationData.put("recipientEmail", effectiveRecipient.getEmail()); // Thêm email
         notificationData.put("timestamp", System.currentTimeMillis());
         notificationData.put("senderUsername", sender != null ? sender.getUsername() : null);
-        notificationData.put("recipientUsername", recipient != null ? recipient.getUsername() : null);
 
-        // Đẩy thông báo qua WebSocket
         messagingTemplate.convertAndSend("/topic/notifications", notificationData);
+        messagingTemplate.convertAndSendToUser(
+                effectiveRecipient.getEmail(), // Sử dụng email cho WebSocket
+                "/queue/notifications",
+                notificationData
+        );
         log.info("📢 Pushed notification to /topic/notifications for type: {}", type.name());
     }
 

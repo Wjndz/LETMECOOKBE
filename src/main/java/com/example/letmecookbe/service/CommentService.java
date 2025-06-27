@@ -72,34 +72,42 @@ public class CommentService {
 
         // ✅ Gửi thông báo đến chủ bài viết
         Account recipeOwner = recipe.getAccount();
-        if (!recipeOwner.getEmail().equalsIgnoreCase(commenter.getEmail())) {
+
+// ✅ Gửi thông báo cho chủ công thức (nếu không phải là người bình luận)
+        if (!recipeOwner.getId().equals(commenter.getId())) {
             String title = "💬 Có bình luận mới";
             String content = commenter.getUsername() + " vừa bình luận công thức của bạn: " + recipe.getTitle();
 
             notificationService.createTypedNotification(
                     commenter,
                     recipeOwner,
-                    NotificationType.COMMENT, // 👈 Xác định rõ loại thông báo
+                    NotificationType.COMMENT,
                     title,
                     content
             );
-
         }
 
-        // ✅ Gửi thông báo đến tất cả Admin
+// ✅ Gửi thông báo đến tất cả Admin, trừ:
+// - người đã nhận rồi (chủ công thức)
+// - người bình luận (self-comment không cần)
         List<Account> adminAccounts = accountRepository.findAllByRoles_Name("ADMIN");
         for (Account admin : adminAccounts) {
+            if (admin.getId().equals(recipeOwner.getId()) || admin.getId().equals(commenter.getId())) {
+                continue; // ❌ bỏ qua nếu trùng người nhận
+            }
+
             String title = "📢 Bình luận mới vừa được đăng";
             String content = "Người dùng " + commenter.getUsername() + " đã bình luận công thức: " + recipe.getTitle();
 
             notificationService.createTypedNotification(
                     commenter,
                     admin,
-                    NotificationType.COMMENT, // 👈 Loại thông báo là COMMENT
+                    NotificationType.COMMENT,
                     title,
                     content
             );
         }
+
 
 
         return commentMapper.toCommentResponse(comment);

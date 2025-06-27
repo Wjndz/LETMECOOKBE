@@ -9,6 +9,7 @@ import com.example.letmecookbe.entity.Account;
 import com.example.letmecookbe.entity.Role;
 import com.example.letmecookbe.entity.UserInfo;
 import com.example.letmecookbe.enums.AccountStatus;
+import com.example.letmecookbe.enums.NotificationType;
 import com.example.letmecookbe.exception.AppException;
 import com.example.letmecookbe.exception.ErrorCode;
 import com.example.letmecookbe.mapper.UserInfoMapper;
@@ -45,6 +46,7 @@ public class UserInfoService {
     RoleRepository roleRepository;
     TempAccountStorage tempAccountStorage;
     FileStorageService fileStorageService;
+    NotificationService notificationService;
 
     public UserInfoResponse createUserInfo(String accountId, UserInfoCreationRequest request) {
         Account account = accountRepository.findById(accountId)
@@ -81,6 +83,27 @@ public class UserInfoService {
         UserInfo savedUserInfo = userInfoRepository.save(userInfo);
 
         log.info("✅ UserInfo created successfully for account: {}", account.getEmail());
+        // Gửi cho user mới
+        notificationService.createTypedNotification(
+                null,                // từ hệ thống
+                account,             // người nhận
+                NotificationType.PRIVATE,
+                "🎉 Chào mừng bạn đến với LetMeCook!",
+                "Cảm ơn bạn đã đăng ký. Bắt đầu chia sẻ công thức nấu ăn yêu thích ngay nhé! 👩‍🍳🍳"
+        );
+
+// Gửi cho tất cả admin
+        List<Account> adminAccounts = accountRepository.findAllByRoles_Name("ADMIN");
+        for (Account admin : adminAccounts) {
+            notificationService.createTypedNotification(
+                    account, // người gửi là user mới đăng ký
+                    admin,
+                    NotificationType.PRIVATE,
+                    "👤 Người dùng mới vừa đăng ký",
+                    "Người dùng " + account.getEmail() + " vừa hoàn tất đăng ký tài khoản."
+            );
+        }
+
         return userInfoMapper.toUserInfoResponse(savedUserInfo);
     }
 
