@@ -146,9 +146,6 @@ public class CommentService {
     @PreAuthorize("hasAuthority('GET_COMMENT_BY_ACCOUNT_ID')")
     public Page<CommentResponse> getCommentsByAccountId(Pageable pageable) {
         Page<Comment> comments = commentRepository.findByAccountId(getAccountIdFromContext(), pageable);
-        if (comments.isEmpty()) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
         return comments.map(commentMapper::toCommentResponse);
     }
 
