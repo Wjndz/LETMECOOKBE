@@ -1,5 +1,6 @@
 package com.example.letmecookbe.controller;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.example.letmecookbe.dto.request.LikeCommentRequest;
 import com.example.letmecookbe.dto.response.ApiResponse;

@@ -151,22 +151,25 @@ public class ReportService {
                 " với nội dung: " + request.getReason();
 
         for (Account admin : adminAccounts) {
+            // Không gửi thông báo cho admin nếu họ cũng là người gửi report
+            if (admin.getId().equals(currentUser.getId())) {
+                continue;
+            }
+            // Gửi riêng tư cho từng admin
             notificationService.createTypedNotification(
                     currentUser,
                     admin,
-                    NotificationType.REPORT, // 👈 đúng loại ở đây
+                    NotificationType.REPORT,
                     adminTitle,
                     adminContent
             );
         }
 
-
-
-        // ✅ Gửi thông báo xác nhận đến người gửi
+// Gửi thông báo xác nhận đến người gửi (chỉ user đó nhận được)
         notificationService.createTypedNotification(
                 null,
                 currentUser,
-                NotificationType.REPORT, // 👈 Bổ sung tham số bắt buộc
+                NotificationType.REPORT,
                 "📩 Báo cáo của bạn đã được gửi",
                 "Chúng tôi đã nhận được báo cáo của bạn và sẽ xử lý trong thời gian sớm nhất. Cảm ơn bạn đã đóng góp!"
         );
@@ -256,6 +259,30 @@ public class ReportService {
 
         Report updatedReport = reportRepository.save(existingReport);
         log.info("Report ID {} status updated to {} by admin {}", reportId, request.getNewStatus(), currentAdminAccount.getEmail());
+
+        Account reporter = existingReport.getReporterAccount();
+
+        if (reporter != null) {
+            if (ReportStatus.RESOLVED == request.getNewStatus()) {
+                log.info("📌 Sending REPORT_RESOLVED notification to {}", reporter.getEmail());
+                notificationService.createTypedNotification(
+                        null,
+                        reporter,
+                        NotificationType.REPORT_RESOLVED,
+                        "✅ Báo cáo đã được xử lý",
+                        "Báo cáo của bạn đã được xử lý bởi admin. Cảm ơn bạn đã đóng góp!"
+                );
+            } else if (ReportStatus.REJECTED == request.getNewStatus()) {
+                log.info("📌 Sending REPORT_IGNORED notification to {}", reporter.getEmail());
+                notificationService.createTypedNotification(
+                        null,
+                        reporter,
+                        NotificationType.REPORT_REJECTED,
+                        "⚠️ Báo cáo đã được xem xét",
+                        "Báo cáo của bạn đã được admin xem xét và đánh dấu bỏ qua. Cảm ơn bạn đã đóng góp!"
+                );
+            }
+        }
 
         return reportMapper.toDto(updatedReport);
     }
