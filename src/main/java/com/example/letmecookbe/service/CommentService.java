@@ -95,7 +95,6 @@ public class CommentService {
             if (admin.getId().equals(recipeOwner.getId()) || admin.getId().equals(commenter.getId())) {
                 continue; // ❌ bỏ qua nếu trùng người nhận
             }
-
             String title = "📢 Bình luận mới vừa được đăng";
             String content = "Người dùng " + commenter.getUsername() + " đã bình luận công thức: " + recipe.getTitle();
 
@@ -107,7 +106,6 @@ public class CommentService {
                     content
             );
         }
-
 
 
         return commentMapper.toCommentResponse(comment);
