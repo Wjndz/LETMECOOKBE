@@ -106,6 +106,14 @@ public class RecipeController {
         return response;
     }
 
+    @GetMapping("/getRecipeByAccountUseForAdmin/{id}")
+    public ApiResponse<Integer> getRecipeByAccountUseForAdmin(@PathVariable String id){
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get all Recipe by Account: ");
+        response.setResult(recipeService.getRecipeByAccountIdUseForAdmin(id));
+        return response;
+    }
+
     @GetMapping("/getRecipeById/{id}")
     public ApiResponse<RecipeResponse> getRecipeById(@PathVariable String id){
         ApiResponse<RecipeResponse> response = new ApiResponse<>();

@@ -150,6 +150,18 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public int getRecipeByAccountIdUseForAdmin(String accountId){
+        if (!accountRepository.existsById(accountId)) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+        int count = RecipeRepository.countRecipesByAccountId(accountId);
+        if (count < 0) {
+            throw new AppException(ErrorCode.LIST_EMPTY);
+        }
+        return count;
+    }
+
     @PreAuthorize("hasAuthority('GET_RECIPE_BY_RECIPE_ID')")
     public RecipeResponse getRecipeById(String id){
         Recipe recipe = RecipeRepository.findById(id).orElseThrow(
@@ -213,15 +225,6 @@ public class RecipeService {
         Recipe updatedRecipe = RecipeRepository.save(recipe);
         return recipeMapper.toRecipeResponse(updatedRecipe);
     }
-
-//    public RecipeResponse disLike(String id) {
-//        Recipe recipe = RecipeRepository.findById(id).orElseThrow(
-//                () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
-//        );
-//        recipe.setTotalLikes(recipe.getTotalLikes() - 1);
-//        Recipe updatedRecipe = RecipeRepository.save(recipe);
-//        return recipeMapper.toRecipeResponse(updatedRecipe);
-//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     public RecipeResponse changeStatusToApprove(String id) {
@@ -314,17 +317,17 @@ public class RecipeService {
         return count;
     }
 
-    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
-    public int countRecipeByUserId(String accountId) {
-        if (!accountRepository.existsById(accountId)) {
-            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
-        }
-        int count = RecipeRepository.countRecipesByAccountId(accountId);
-        if (count < 0) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
-        return count;
-    }
+//    @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_ACCOUNT')")
+//    public int countRecipeByUserId(String accountId) {
+//        if (!accountRepository.existsById(accountId)) {
+//            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+//        }
+//        int count = RecipeRepository.countRecipesByAccountId(accountId);
+//        if (count < 0) {
+//            throw new AppException(ErrorCode.LIST_EMPTY);
+//        }
+//        return count;
+//    }
 
     @PreAuthorize("hasAnyAuthority('COUNT_REICPE_BY_SUB_CATEGORY')")
     public int countRecipeBySubCategoryId(String subCategoryId){
