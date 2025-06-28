@@ -105,7 +105,6 @@ public class RecipeService {
                 () -> new AppException(ErrorCode.RECIPE_NOT_FOUND)
         );
 
-
         if(!updateRequest.getTitle().isBlank())
             recipe.setTitle(updateRequest.getTitle());
 

@@ -106,8 +106,6 @@ public class CommentService {
                     content
             );
         }
-
-
         return commentMapper.toCommentResponse(comment);
     }
 
@@ -252,5 +250,12 @@ public class CommentService {
     public long getTotalCommentReportsFromReportEntity() {
         // Đảm bảo ReportType.COMMENT là giá trị enum chính xác trong ReportType của bạn
         return reportRepository.countByReportType(ReportType.REPORT_COMMENT);
+    }
+
+    @PreAuthorize("hasAuthority('COUNT_COMMENT_BY_ACCOUNT')")
+    public int countCommentAccount(){
+        Account commenter = accountRepository.findById(getAccountIdFromContext())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return commentRepository.countCommentsByAccountId(getAccountIdFromContext());
     }
 }

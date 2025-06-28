@@ -174,8 +174,6 @@ public class ReportService {
                 "Chúng tôi đã nhận được báo cáo của bạn và sẽ xử lý trong thời gian sớm nhất. Cảm ơn bạn đã đóng góp!"
         );
 
-
-
         return reportMapper.toDto(savedReport);
     }
 

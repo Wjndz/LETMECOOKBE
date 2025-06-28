@@ -20,6 +20,9 @@ public interface CommentRepository extends JpaRepository<Comment, String>, JpaSp
     Page<Comment> findByCommentTextContainingIgnoreCase(String commentText, Pageable pageable);
     long countByStatus(CommentStatus status);
 
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.account.id = :accountId")
+    int countCommentsByAccountId(String accountId);
+
     @Modifying
     @Query("DELETE FROM Comment c WHERE c.recipe.id = :recipeId")
     void deleteByRecipeId(String recipeId);

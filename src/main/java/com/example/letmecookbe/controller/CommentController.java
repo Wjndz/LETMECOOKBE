@@ -140,4 +140,13 @@ public class CommentController {
         response.setResult(commentService.getCommentsByAccountId(pageable));
         return response;
     }
+
+    @GetMapping("/countCommentByAccount")
+    public ApiResponse<Integer> countCommentByAccount()
+    {
+        ApiResponse<Integer> response = new ApiResponse<>();
+        response.setMessage("Get total comment by Account: ");
+        response.setResult(commentService.countCommentAccount());
+        return response;
+    }
 }
