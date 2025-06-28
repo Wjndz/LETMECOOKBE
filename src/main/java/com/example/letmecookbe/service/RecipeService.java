@@ -183,10 +183,6 @@ public class RecipeService {
 
         Page<Recipe> recipePage = RecipeRepository.findRecipeBySubCategoryIdWithPagination(id, pageable);
 
-        if (recipePage.isEmpty()) {
-            throw new AppException(ErrorCode.LIST_EMPTY);
-        }
-
         return recipePage
                 .map(recipe -> "APPROVED".equalsIgnoreCase(recipe.getStatus()) ? recipe : null)
                 .map(recipe -> recipe != null ? recipeMapper.toRecipeResponse(recipe) : null);
