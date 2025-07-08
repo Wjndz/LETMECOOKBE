@@ -1,6 +1,6 @@
 # LetMeCook – Backend (Personal Contribution Version)
 This is the backend portion of LetMeCook, a team project of 5 members, building a social platform for users to share and interact with cooking recipes.
-This version was uploaded and documented by Dũn, who directly developed several core backend modules such as notifications, commenting, reporting, and WebSocket integration. The code here reflects only the parts that I personally implemented.
+This version was uploaded and documented by Dũng, who directly developed several core backend modules such as notifications, commenting, reporting, and WebSocket integration. The code here reflects only the parts that I personally implemented.
 
 ## Project Overview
 - Team size: 5 people  
